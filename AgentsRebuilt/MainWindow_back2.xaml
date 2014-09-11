@@ -1,0 +1,208 @@
+﻿<Window x:Class="AgentsRebuilt.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MultiAgentz Visualisation" Height="738.537" Width="1309.254"
+        xmlns:mylocalXAMLnamespace="clr-namespace:AgentsRebuilt"
+        >
+    <TabControl HorizontalAlignment="Left" Height="713" Margin="0,0,0,-4" VerticalAlignment="Top" Width="1299" Grid.ColumnSpan="2" Grid.RowSpan="2">
+        <TabItem Header="Market View">
+
+            <Grid Margin="-4,-4,0,0">
+                <Grid.Resources>
+
+
+                    <DataTemplate x:Key="KVPItemTemplate">
+
+                        <Grid Width="125" Height="40" >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="40"></ColumnDefinition>
+                                <ColumnDefinition Width="65"></ColumnDefinition>
+                                <ColumnDefinition Width="20"></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="40"></RowDefinition>
+                            </Grid.RowDefinitions>
+                            <Border BorderBrush="{Binding Path=BorderBrush, UpdateSourceTrigger=PropertyChanged}" BorderThickness="1" CornerRadius="4" Grid.ColumnSpan="3" Background="{Binding Path=Background, UpdateSourceTrigger=PropertyChanged}">
+
+                            </Border>
+                            <Image 
+                        Width="36"
+                        Height="36"
+                        Grid.Column="0"
+                        Grid.Row="0"
+                        Source = "{Binding Path=Source}"/>
+                            <TextBlock 
+                        Text="{Binding Path=Title}"
+                        VerticalAlignment="Center"
+                        Grid.Column="1"
+                        Grid.Row="0"/>
+                            <TextBlock 
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Right"
+                        Margin="0,0,3,0"
+                        Grid.Column="2"
+                        Grid.Row="0"
+                        Text="{Binding Path=Amount}"
+                        />
+                        </Grid>
+                    </DataTemplate>
+                    <DataTemplate x:Key="CfgItemTemplate">
+                        <TextBlock 
+                        Text="{Binding Path=Content, UpdateSourceTrigger=PropertyChanged}"
+                        VerticalAlignment="Center">
+                        </TextBlock>
+                    </DataTemplate>
+                    <DataTemplate x:Key="ClockItemTemplate">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="143"></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="20"></RowDefinition>
+                            </Grid.RowDefinitions>
+                            <Border BorderBrush="Gray" Grid.Row="0" Grid.Column="0" BorderThickness="1"/>
+                            <TextBlock Grid.Row="0" Grid.Column="0"
+                        Text="{Binding Path=Content, UpdateSourceTrigger=PropertyChanged}"
+                        VerticalAlignment="Center" 
+                               Margin="3,0,0,0">
+
+                            </TextBlock>
+                        </Grid>
+
+                    </DataTemplate>
+                    <DataTemplate x:Key="AgentTemplate1">
+                        <Grid Width="130">
+                            <TextBlock Text="It wrks" Width="120">
+                            </TextBlock>
+                        </Grid>
+                    </DataTemplate>
+                    <DataTemplate x:Key="AgentTemplate">
+
+                        <Grid Width="165" Height="260">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="165"></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="50"></RowDefinition>
+                                <RowDefinition Height="210"></RowDefinition>
+                            </Grid.RowDefinitions>
+                            <Border Grid.RowSpan="2" BorderThickness="2" BorderBrush="{Binding Path=BorderBrush}" Background="{Binding Path=Background, UpdateSourceTrigger=PropertyChanged}"/>
+                            <WrapPanel Grid.Row="0">
+                                <Image 
+                            Source="{Binding Path=Source}"
+                            Height="48"
+                            Margin="5,3,0,0"
+                            />
+                                <TextBlock
+                            Text="{Binding Path=Id}"   
+                        />
+                            </WrapPanel>
+                            <ListBox Name="listBox1" 
+                             ItemsSource="{Binding Path=itms, UpdateSourceTrigger=PropertyChanged}" 
+                             ItemTemplate="{StaticResource KVPItemTemplate}" 
+                             Height="200" Width="160" Grid.Row="1">
+                                <ListBox.ItemContainerStyle>
+                                    <Style TargetType="ListBoxItem">
+                                        <EventSetter Event="MouseDoubleClick" Handler="KVPItem_Clicked"/>
+                                    </Style>
+                                </ListBox.ItemContainerStyle>
+                            </ListBox>
+                        </Grid>
+                    </DataTemplate>
+                </Grid.Resources>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+          
+                <ListBox Name="AgentsList" ItemTemplate="{StaticResource AgentTemplate}" Grid.Column="0" 
+                 ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged}" Grid.RowSpan="2" Grid.ColumnSpan="2">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid IsItemsHost="True" />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                </ListBox>
+
+
+                <StackPanel Grid.Column="1" Grid.Row="1">
+                    <Button Click="OnRun">_Run</Button>
+                    <Button Click="OnStop">_Stop</Button>
+                    <Button Click="OnConfig">_Config</Button>
+                    <Button Click="OnExit">E_xit</Button>
+                    <Button Click="Restart">Reset</Button>
+                    <WrapPanel>
+                        <TextBox Name="LineNumber" Width="20" Text="0"></TextBox>
+                        <Button Click="Go" Width="30">Go</Button>
+                    </WrapPanel>
+                    <ListBox Name="ClockList" 
+                         ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged}"
+                         ItemTemplate="{StaticResource CfgItemTemplate}" Margin="-2,-1, 0,0">
+                    </ListBox>
+                </StackPanel>
+            </Grid>
+        </TabItem>
+            <TabItem Header="Agent View">
+                <Grid Background="#FFE5E5E5"/>
+            </TabItem>
+        <TabItem Header="Items">
+            <Grid Background="#FFE5E5E5"/>
+        </TabItem>
+        <TabItem Header="Config" >
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="400"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <GroupBox Header="Data source" HorizontalAlignment="Left" Height="68" Margin="10,31,0,0" VerticalAlignment="Top" Width="165"/>
+                <RadioButton Name="RadioButton1" Content="Socket" HorizontalAlignment="Left" Margin="29,54,0,0" VerticalAlignment="Top" Checked="RadioButton1_Checked" Unchecked="RadioButton1_Unchecked"/>
+                <RadioButton Name="RadioButton2" Content="Log file" HorizontalAlignment="Left" Margin="29,73,0,0" VerticalAlignment="Top"/>
+                <Label Content="Socket port:" HorizontalAlignment="Left" Margin="10,117,0,0" VerticalAlignment="Top"/>
+                <Label Content="Log file path:" HorizontalAlignment="Left" Margin="10,203,0,0" VerticalAlignment="Top"/>
+                <TextBox Name="TextBox1" HorizontalAlignment="Left" Height="26" Margin="92,116,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="49"/>
+                <TextBox Name="TextBox2" HorizontalAlignment="Left" Height="26" Margin="92,202,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="165"/>
+                <Button Name="logOpenBtn"  Content="Browse" HorizontalAlignment="Left" Height="23" Margin="280,201,0,0" VerticalAlignment="Top" Width="68" Click="logOpenBtn_Click"/>
+                <Label Content="Icon file path:" HorizontalAlignment="Left" Margin="10,257,0,0" VerticalAlignment="Top"/>
+                <TextBox x:Name="TextBox3" HorizontalAlignment="Left" Height="26" Margin="92,256,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="165"/>
+                <Button x:Name="iconOpenBtn"  Content="Browse" HorizontalAlignment="Left" Height="23" Margin="280,256,0,0" VerticalAlignment="Top" Width="68" Click="iconOpenBtn_Click"/>
+                <Label Content="Icon extension:" HorizontalAlignment="Left" Margin="10,290,0,0" VerticalAlignment="Top"/>
+                <TextBox x:Name="TextBox4" HorizontalAlignment="Left" Height="26" Margin="104,290,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="37"/>
+                <Button Name="SaveCfgBtn" Content="Save" HorizontalAlignment="Left" Height="28" Margin="10,358,0,0" VerticalAlignment="Top" Width="95" Click="SaveCfgBtn_Click"/>
+                <Button x:Name="RestoreBtn" Content="Restore" HorizontalAlignment="Left" Height="28" Margin="129,358,0,0" VerticalAlignment="Top" Width="95" Click="RestoreBtn_Click"/>
+                <Button x:Name="CgfCancelBtn" Content="Exit" HorizontalAlignment="Left" Height="28" Margin="249,358,0,0" VerticalAlignment="Top" Width="95" Click="OnExit"/>
+                <Label Content="Host name:" HorizontalAlignment="Left" Margin="10,150,0,0" VerticalAlignment="Top"/>
+                <TextBox x:Name="TextBox5" HorizontalAlignment="Left" Height="26" Margin="92,149,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="112"/>
+                <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="620"/>
+                        <ColumnDefinition Width="250"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.Resources>
+                        <DataTemplate x:Key="CfgItemTemplate">
+                            <TextBlock 
+                        Text="{Binding Path=Content, UpdateSourceTrigger=PropertyChanged}"
+                        VerticalAlignment="Center">
+                            </TextBlock>
+                        </DataTemplate>
+
+                    </Grid.Resources>
+                    <ListBox Grid.Row="0" Grid.Column="0" Name="ConfigList" ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged}"
+                 BorderBrush="White"
+                 ItemTemplate="{StaticResource CfgItemTemplate}">
+
+                    </ListBox>
+
+
+
+                </Grid>
+
+            </Grid>
+        </TabItem>
+    </TabControl>
+  
+
+</Window>
