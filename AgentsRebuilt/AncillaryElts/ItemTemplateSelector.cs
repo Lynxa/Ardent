@@ -22,11 +22,11 @@ namespace AgentsRebuilt
                // if (selectedPerson != null)
                 if (chk.IsChecked==true)
                 {
-                    return window.FindResource("CfgItemTemplate") as DataTemplate;
+                    return window.FindResource("CfgItemTemplate2") as DataTemplate;
                 }
                 else
                 {
-                    return window.FindResource("CfgItemTemplate2") as DataTemplate;
+                    return window.FindResource("CfgItemTemplate1") as DataTemplate;
                 }
             }
 

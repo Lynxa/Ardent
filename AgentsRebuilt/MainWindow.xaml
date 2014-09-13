@@ -161,23 +161,23 @@
                   Margin="0,32,10,38"/>
         <!--{StaticResource CfgItemTemplate2}" -->
 
-        <Button Name="RestartButton"  HorizontalAlignment="Left" Height="35" Margin="163,77,0,0" Grid.Row="2" VerticalAlignment="Top" Click="Restart" Width="67" IsEnabled="False">Res_tart
+        <Button Name="RestartButton" ToolTip="Reset the application, running it with the previously chosen mode from the beginning" HorizontalAlignment="Left" Height="35" Margin="163,77,0,0" Grid.Row="2" VerticalAlignment="Top" Click="Restart" Width="67" IsEnabled="False">Res_tart
         </Button>
-        <Button Name="RunButton" HorizontalAlignment="Left" Height="35" Margin="17,77,0,0" Grid.Row="2" Click="OnRun" VerticalAlignment="Top" Width="67" RenderTransformOrigin="0.821,0.2">
+        <Button Name="RunButton" ToolTip="Go over log records at the indicated speed" HorizontalAlignment="Left" Height="35" Margin="17,77,0,0" Grid.Row="2" Click="OnRun" VerticalAlignment="Top" Width="67" RenderTransformOrigin="0.821,0.2">
             _Run
         </Button>
-        <Button x:Name="FollowButton" HorizontalAlignment="Left" Height="35" Margin="90,77,0,0" Grid.Row="2" Click="OnFollow" VerticalAlignment="Top" Width="67" RenderTransformOrigin="0.821,0.2" Content="_Follow"/>
+        <Button x:Name="FollowButton" ToolTip="Go over log records, keeping the indicated distance from the last state" HorizontalAlignment="Left" Height="35" Margin="90,77,0,0" Grid.Row="2" Click="OnFollow" VerticalAlignment="Top" Width="67" RenderTransformOrigin="0.821,0.2" Content="_Follow"/>
 
-        <Button Name="PauseButton" HorizontalAlignment="Left" Height="35" Margin="236,77,0,0" Grid.Row="2" Click="OnPause" VerticalAlignment="Top" Width="67" IsEnabled="false">
+        <Button Name="PauseButton" ToolTip="Pause the visualisation run" HorizontalAlignment="Left" Height="35" Margin="236,77,0,0" Grid.Row="2" Click="OnPause" VerticalAlignment="Top" Width="67" IsEnabled="false">
             _Pause</Button>
         <TextBox Name="LineNumber" Text="0" Grid.Row="2" Margin="406,85,941,39" />
 
-        <Button Click="Go" Content="Go" Margin="460,78,845,37" Width="80" Grid.Row="2"/>
+        <Button Click="Go" ToolTip="Move to the state with indicated number" Content="Go" Margin="460,78,845,37" Width="80" Grid.Row="2"/>
 
 
-        <Button Name="ExiButton" Click="OnExit" Content="E_xit" Margin="1007,78,300,37" Width="80" Grid.Row="2"/>
-        <Button Name="ConfigButton" Click="OnConfig" Content="_Config" Margin="901,78,405,37" Width="80" Grid.Row="2"/>
-        <Button Name="StopButton" HorizontalAlignment="Left" Height="35" Margin="309,77,0,0" Grid.Row="2" Click="OnStop" VerticalAlignment="Top" Width="67" Content="_Stop" IsEnabled="false"/>
+        <Button Name="ExiButton" ToolTip="Close the application" Click="OnExit" Content="E_xit" Margin="1007,78,300,37" Width="80" Grid.Row="2"/>
+        <Button Name="ConfigButton" ToolTip="Change the visualisation configuration" Click="OnConfig" Content="_Config" Margin="901,78,405,37" Width="80" Grid.Row="2"/>
+        <Button Name="StopButton" ToolTip="Stop the visualisation run" HorizontalAlignment="Left" Height="35" Margin="309,77,0,0" Grid.Row="2" Click="OnStop" VerticalAlignment="Top" Width="67" Content="_Stop" IsEnabled="false"/>
         <CheckBox Name="CheckBox1" Content="Actual" HorizontalAlignment="Left" Height="17" Margin="701,108,0,0" Grid.Row="2" VerticalAlignment="Top" Width="82" Checked="CheckBox1_Checked" Unchecked="CheckBox1_Unchecked"/>
         <Slider Name="SpeedSlider" HorizontalAlignment="Left" Height="26" Margin="701,77,0,0" Grid.Row="2" VerticalAlignment="Top" Width="114" 
                 TickPlacement="TopLeft" 
