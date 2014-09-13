@@ -63,11 +63,53 @@ namespace AgentsRebuilt
                         _message = ag.GetAgentNameByID(subject) + "(" + subject + ") " +
                                   "has enforced the following punishments: " + obj + ".";
                     }
+                    else if (successfully.Equals("successfully"))
+                    {
+                        if (action.StartsWith("open_auction"))
+                        {
+                            String _objAuction = obj.Substring(0, obj.IndexOf(','));
+                            String obj1 = (obj.Remove(0, obj.IndexOf(',') + 1)).Replace(" ", "");
+                            String _objItem = obj1.Substring(0, obj1.IndexOf(","));
+                            String _objPrice = (obj1.Remove(0, obj1.IndexOf(',') + 1));
+                            
+                            _message = ag.GetAgentNameByID(subject) + "(" + subject + ") " + "has created the auction \"" +_objAuction + "\" for "+
+                                       _objItem + " with opening price of " + _objPrice;
+                        }
+                        else if (action.StartsWith("close_auction"))
+                        {
+                            _message = ag.GetAgentNameByID(subject) + "(" + subject + ") " + "has closed the auction \"" +
+                                       obj +"\"";
+                        }
+                        else if (action.StartsWith("place_bid"))
+                        {
+                            String _objAuction = obj.Substring(0, obj.IndexOf(','));
+                            String _objPrice = (obj.Remove(0, obj.IndexOf(',') + 1)).Replace(" ", "");
+                            _message = ag.GetAgentNameByID(subject) + "(" + subject + ") " + "has placed the bid of " + _objPrice+
+                                       " in auction \"" + _objAuction +"\".";
+                        }
+                        else if (action.StartsWith("sell"))
+                        {
+                            String _objItem = obj.Substring(0, obj.IndexOf(','));
+                            String obj1 = (obj.Remove(0, obj.IndexOf(',') + 1)).Replace(" ", "");
+                            String _objPrice = obj1.Substring(0, obj1.IndexOf(","));
+                            String _objAgent = (obj1.Remove(0, obj1.IndexOf(',') + 1));
+                            _message = ag.GetAgentNameByID(subject) + "(" + subject + ") " + "has sold the item " + _objItem+
+                                       " for " +_objPrice +" to " + ag.GetAgentNameByID(_objAgent) + "(" + _objAgent + ")";
+                        }
+                        else
+                        {
+                            _message = ag.GetAgentNameByID(subject) + "(" + subject + ") " + successfully +
+                                       "performed the following action: " +
+                                       action + (!obj.Equals("") ? "(" + obj + ")" : "") + ".";
+                        }
+                    }
                     else
                     {
-                        _message = ag.GetAgentNameByID(subject) + "(" + subject + ") " + successfully + " tried to perform the following action: " +
+                        _message = ag.GetAgentNameByID(subject) + "(" + subject + ") " + successfully +
+                                   " tried to perform the following action: " +
                                    action + (!obj.Equals("") ? "(" + obj + ")" : "") + ".";
                     }
+
 
                 }
                 if (k.Key == "happened_at")

@@ -146,6 +146,7 @@
 
         <Slider Name="MainSlider" 
                         HorizontalAlignment="Left" 
+                        ToolTip="Slider shows the current position of the visualisation in the log file"
                         Height="28" 
                         VerticalAlignment="Top" 
                         Width="1074" 
@@ -181,6 +182,7 @@
         <CheckBox Name="CheckBox1" Content="Actual" HorizontalAlignment="Left" Height="17" Margin="701,108,0,0" Grid.Row="2" VerticalAlignment="Top" Width="82" Checked="CheckBox1_Checked" Unchecked="CheckBox1_Unchecked"/>
         <Slider Name="SpeedSlider" HorizontalAlignment="Left" Height="26" Margin="701,77,0,0" Grid.Row="2" VerticalAlignment="Top" Width="114" 
                 TickPlacement="TopLeft" 
+                ToolTip="Period of state changes during the visualisation run. When actual is checked, state changes are reflected with the speed they originally happened"
                 ValueChanged="Slider_ValueChanged" 
                 Minimum="0.5"
                 Maximum="3"

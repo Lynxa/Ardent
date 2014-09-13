@@ -26,7 +26,7 @@ namespace AgentsRebuilt
                 }
                 else
                 {
-                    return window.FindResource("CfgItemTemplate1") as DataTemplate;
+                    return window.FindResource("CfgItemTemplate") as DataTemplate;
                 }
             }
 
