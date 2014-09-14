@@ -22,7 +22,8 @@ namespace AgentsRebuilt
         private String name;
         private AgentDataDictionary ImageDictionary;
         private Dispatcher uiDispatcher;
-        
+        private bool _isExpanded=false;
+
         public ImageSource _imageSource;
 
 
@@ -40,6 +41,22 @@ namespace AgentsRebuilt
                 bg = new SolidColorBrush(Colors.LightYellow);
                 brd = new SolidColorBrush(ColorAndIconAssigner.GetOrAssignColorById(id));
             });
+        }
+
+        public bool IsExpanded
+        {
+            get { return _isExpanded; }
+
+            set
+            {
+                
+                uiDispatcher.Invoke(() =>
+                {
+                    _isExpanded = value;
+                });
+
+                NotifyPropertyChanged();
+            }
         }
 
         public String Id 

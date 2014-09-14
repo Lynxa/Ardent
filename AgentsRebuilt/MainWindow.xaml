@@ -80,9 +80,34 @@
                 </Grid>
             </DataTemplate>
 
+            <ControlTemplate x:Key="AgentTemplateCollapsed">
+                
+                <Grid Width="165" Margin="20" MouseLeftButtonDown="UIElement_OnMouseLeftButtonDown">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="165"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="52"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Border Grid.RowSpan="2" BorderThickness="2" BorderBrush="{Binding Path=BorderBrush}" Background="{Binding Path=Background, UpdateSourceTrigger=PropertyChanged}" />
+                    <WrapPanel Grid.Row="0">
+                        <Image 
+                            Source="{Binding Path=Source}"
+                            Height="48"
+                            Margin="2,2,0,2"
+                            />
+                        <TextBlock
+                            Margin="10,5,0,0"
+                            Text="{Binding Path=Title}"   
+                        />
+                    </WrapPanel>
 
-            <DataTemplate x:Key="AgentTemplate">
-                <Grid Width="165" Margin="20">
+                </Grid>
+            </ControlTemplate>
+            
+           <ControlTemplate x:Key="AgentTemplateExpanded">
+                <Grid Width="165" Margin="20" MouseLeftButtonDown="UIElement_OnMouseLeftButtonDown">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="165"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
@@ -113,7 +138,19 @@
                         </ListBox.ItemContainerStyle>
                     </ListBox>
                 </Grid>
+            </ControlTemplate>
+
+            <DataTemplate x:Key="AgentTemplate">
+                <Control x:Name="theControl" 
+                         Template="{StaticResource AgentTemplateCollapsed}" />
+                <DataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding Path=IsExpanded, UpdateSourceTrigger=PropertyChanged}" Value="True">
+                        <Setter TargetName="theControl" Property="Template"
+                    Value="{StaticResource AgentTemplateExpanded}" />
+                    </DataTrigger>
+                </DataTemplate.Triggers>
             </DataTemplate>
+
         </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="64*" />
@@ -129,9 +166,11 @@
                  ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged}" Grid.ColumnSpan="2">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <WrapPanel IsItemsHost="True" Orientation="Vertical"/>
+                    <WrapPanel IsItemsHost="True" Orientation="Vertical">
+                    </WrapPanel>
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
+
         </ItemsControl>
 
         <ListBox Grid.Row="0" Grid.Column="0" Name="ConfigList" ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged}"
@@ -154,7 +193,9 @@
                         Grid.Row="2" 
                         Margin="18,10,0,0"
                         ValueChanged="MainSlider_OnValueChangedSlider_ValueChanged"
-                        TickPlacement="BottomRight"/>
+                        TickPlacement="BottomRight"
+                        IsSnapToTickEnabled="True"
+        />
 
         <ListBox x:Name="ClockList" Width="140" Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Right"
                          ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged}"

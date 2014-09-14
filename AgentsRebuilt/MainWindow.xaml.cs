@@ -509,6 +509,12 @@ namespace AgentsRebuilt
         }
 
 
+        private void UIElement_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            var item = (sender as Grid);
+            Agent tp = (Agent)item.DataContext;
+            tp.IsExpanded = !tp.IsExpanded;
+        }
 
     }
 }

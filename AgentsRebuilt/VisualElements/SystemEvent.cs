@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -22,8 +21,7 @@ namespace AgentsRebuilt
                 if (k.Key == "description")
                 {
                     String ts = k.Value;
-                    StringBuilder res = new StringBuilder();
-
+                    
                     ts = ts.Remove(0, k.Value.IndexOf("(") + 1);
                     ts = ts.Remove(ts.Length - 1, 1);
 
