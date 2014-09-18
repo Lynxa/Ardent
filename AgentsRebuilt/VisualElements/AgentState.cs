@@ -13,6 +13,7 @@ namespace AgentsRebuilt
         public Clock Clock;
         public ObservableCollection <Agent> Agents = new ObservableCollection<Agent>();
         public SystemEvent Event = null;
+        public ObservableCollection<Item> Auctions = new ObservableCollection<Item>();
 
     }
 }

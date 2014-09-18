@@ -22,7 +22,7 @@ namespace AgentsRebuilt
         private String name;
         private AgentDataDictionary ImageDictionary;
         private Dispatcher uiDispatcher;
-        private bool _isExpanded=false;
+        private bool _isExpanded=true;
 
         public ImageSource _imageSource;
 

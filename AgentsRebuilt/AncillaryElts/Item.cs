@@ -37,6 +37,10 @@ namespace AgentsRebuilt
             set { Key = value; }
         }
 
+        public string ElementType
+        {
+            get { return this.Type.ToString() + "s"; }
+        }
 
         public ElementStatus Status
         {

@@ -16,6 +16,7 @@ namespace AgentsRebuilt
         public static AgentState MapState(KVP root,AgentDataDictionary _agentDataDictionary, Dispatcher uiThread)
         {
             ObservableCollection<Agent> agList = new ObservableCollection <Agent>();
+            ObservableCollection<Item> aucList = new ObservableCollection<Item>();
             Dictionary<String, List<KVP>> agts = new Dictionary<string, List<KVP>>();
             AgentState state = new AgentState();
             foreach (var kvp in root.ListOfItems)
@@ -23,6 +24,10 @@ namespace AgentsRebuilt
                 if (kvp.Key.Equals("clock"))
                 {
                     state.Clock = new Clock(kvp);
+                }
+                if (kvp.Key.StartsWith("mekeke"))
+                {
+                    aucList.Add(Item.KvpToItem(kvp, _agentDataDictionary, uiThread));
                 }
                 else if (kvp.Key.StartsWith("event"))
                 {
@@ -53,7 +58,7 @@ namespace AgentsRebuilt
                         {
                             if (!agts.ContainsKey(elt.Value))
                             {
-                                agts.Add(elt.Value, new List<KVP> {} );
+                                agts.Add(elt.Value, new List<KVP> {});
                             }
                         }
                     }
@@ -69,6 +74,7 @@ namespace AgentsRebuilt
                 agList.Add(new Agent("god", new List<KVP>(), _agentDataDictionary, uiThread));
             }
             state.Agents = agList;
+            state.Auctions = aucList;
             return state;
         }
 
@@ -79,8 +85,53 @@ namespace AgentsRebuilt
             oldState.Clock.ExpiredAt = newState.Clock.ExpiredAt;
             oldState.Clock.SetTextList();
             oldState.Event = newState.Event;
+            UpdateAuctions(oldState.Auctions, newState.Auctions, uiThread);
             UpdateStep(oldState.Agents, newState.Agents, uiThread);
         }
+
+        private static void UpdateAuctions(ObservableCollection<Item> oldAuctions, ObservableCollection<Item> newAuctions, Dispatcher uiThread)
+        {
+            var toExecute = new List<Item>();
+            foreach (var agn in oldAuctions)
+            {
+                if (agn.Status == ElementStatus.Deleted)
+                {
+                    toExecute.Add(agn);
+                }
+                else
+                {
+                    agn.Status = ElementStatus.Unchanged;
+
+                }
+
+                Item newA = GetItemByKey(newAuctions, agn.Key);
+                if (newA == null)
+                {
+                    agn.Status = ElementStatus.Deleted;
+                }
+                else
+                {
+                 //TODO:Update auction   UpdateAgentItems(agn, newA, uiThread);
+                }
+                //TODO:Update auction  
+            }
+            foreach (var auction1 in toExecute)
+            {
+                uiThread.Invoke(() =>
+                {
+                    oldAuctions.Remove(auction1);
+                });
+            }
+
+            foreach (var auction in newAuctions)
+            {
+                if (!ContainsItem(oldAuctions, auction.Key))
+                {
+                    Item auction1 = auction;
+                    uiThread.Invoke(() => oldAuctions.Add(auction1));
+                }
+            }
+        } 
 
         private static void UpdateStep(ObservableCollection<Agent> oldAgents, ObservableCollection<Agent> newAgents, Dispatcher uiThread)
         {

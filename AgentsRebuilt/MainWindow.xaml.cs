@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics.Eventing.Reader;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,6 +21,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using AgentsConfig;
+using AgentsRebuilt.Annotations;
 using Microsoft.Win32;
 using System.Windows.Forms;
 
@@ -27,7 +30,7 @@ namespace AgentsRebuilt
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
         public CfgSettings Config = new CfgSettings();
 
@@ -80,6 +83,7 @@ namespace AgentsRebuilt
         private void RunFromLog(CfgSettings Config)
         {
             ObservableCollection<Agent> visualAgents;
+            ObservableCollection<Item> visualAuctions;
             ObservableCollection<String> tradeLog = null;
             //LogProcessor.InitOrReread(@"D:\C# Projects\WindowsFormsApplication1\WindowsFormsApplication1\Log\history_ftm.db");
             if (File.Exists(Config.HistPath))
@@ -115,8 +119,10 @@ namespace AgentsRebuilt
                                             dsc.Invoke(() =>
                                             {
                                                 visualAgents = ast.Agents;
+                                                visualAuctions = ast.Auctions;
                                                 tradeLog = new ObservableCollection<string>() {};
                                                 AgentsList.DataContext = visualAgents;
+                                                AuctionsList.DataContext = visualAuctions;
                                                 ast.Clock.StepNo = LogProcessor.GetIndex;
                                                 ClockList.DataContext = ast.Clock.TextList;
                                                 MainSlider.Maximum = LogProcessor.GetNumber;
@@ -445,6 +451,7 @@ namespace AgentsRebuilt
             if (state == ExecutionState.Running || state == ExecutionState.Following)
             {
                 RunButton.IsEnabled = true;
+                PauseButton.IsEnabled = false;
                 FollowButton.IsEnabled = true;
                 _previousState = state;
                 state = ExecutionState.Paused;
@@ -516,5 +523,18 @@ namespace AgentsRebuilt
             tp.IsExpanded = !tp.IsExpanded;
         }
 
+        private int AuctionCount 
+        {
+            get { return ast!=null&&ast.Auctions!=null?ast.Auctions.Count:0; }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChangedEventHandler handler = PropertyChanged;
+            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }
