@@ -17,7 +17,10 @@ namespace AgentsRebuilt
         {
             ObservableCollection<Agent> agList = new ObservableCollection <Agent>();
             ObservableCollection<Item> aucList = new ObservableCollection<Item>();
+            ObservableCollection<Item> comList = new ObservableCollection<Item>();
+
             Dictionary<String, List<KVP>> agts = new Dictionary<string, List<KVP>>();
+
             AgentState state = new AgentState();
             foreach (var kvp in root.ListOfItems)
             {
@@ -67,7 +70,19 @@ namespace AgentsRebuilt
             }
             foreach (var agt in agts)
             {
-                agList.Add(new Agent(agt.Key, agt.Value, _agentDataDictionary,uiThread));
+                if (!agt.Key.StartsWith("_"))
+                {
+                    agList.Add(new Agent(agt.Key, agt.Value, _agentDataDictionary, uiThread));
+                }
+                else
+                {
+                    ObservableCollection<Item> tRights = Item.KvpToItems(agt.Value, _agentDataDictionary, uiThread);
+                    foreach (var tRight in tRights)
+                    {
+                        comList.Add(tRight);
+                    }
+                    
+                }
             }
             if (!agts.ContainsKey("god"))
             {
@@ -75,6 +90,7 @@ namespace AgentsRebuilt
             }
             state.Agents = agList;
             state.Auctions = aucList;
+            state.CommonRights = comList;
             return state;
         }
 
@@ -86,7 +102,38 @@ namespace AgentsRebuilt
             oldState.Clock.SetTextList();
             oldState.Event = newState.Event;
             UpdateAuctions(oldState.Auctions, newState.Auctions, uiThread);
+            UpdateCommons(oldState.CommonRights, newState.CommonRights, uiThread);
             UpdateStep(oldState.Agents, newState.Agents, uiThread);
+        }
+
+        private static void UpdateCommons(ObservableCollection<Item> oldCommons,
+            ObservableCollection<Item> newCommons, Dispatcher uiThread)
+        {
+            var toExecute = new List<Item>();
+            foreach (var agn in oldCommons)
+            {
+                Item newA = GetItemByKey(newCommons, agn.Key);
+                if (newA == null)
+                {
+                   toExecute.Add(agn);
+                }
+            }
+            foreach (var item in toExecute)
+            {
+                uiThread.Invoke(() =>
+                {
+                    oldCommons.Remove(item);
+                });
+            }
+
+            foreach (var auction in newCommons)
+            {
+                if (!ContainsItem(oldCommons, auction.Key))
+                {
+                    Item auction1 = auction;
+                    uiThread.Invoke(() => oldCommons.Add(auction1));
+                }
+            }
         }
 
         private static void UpdateAuctions(ObservableCollection<Item> oldAuctions, ObservableCollection<Item> newAuctions, Dispatcher uiThread)

@@ -84,6 +84,7 @@ namespace AgentsRebuilt
         {
             ObservableCollection<Agent> visualAgents;
             ObservableCollection<Item> visualAuctions;
+            ObservableCollection<Item> visualCommons;
             ObservableCollection<String> tradeLog = null;
             //LogProcessor.InitOrReread(@"D:\C# Projects\WindowsFormsApplication1\WindowsFormsApplication1\Log\history_ftm.db");
             if (File.Exists(Config.HistPath))
@@ -120,9 +121,11 @@ namespace AgentsRebuilt
                                             {
                                                 visualAgents = ast.Agents;
                                                 visualAuctions = ast.Auctions;
+                                                visualCommons = ast.CommonRights;
                                                 tradeLog = new ObservableCollection<string>() {};
                                                 AgentsList.DataContext = visualAgents;
                                                 AuctionsList.DataContext = visualAuctions;
+                                                CommonsList.DataContext = visualCommons;
                                                 ast.Clock.StepNo = LogProcessor.GetIndex;
                                                 ClockList.DataContext = ast.Clock.TextList;
                                                 MainSlider.Maximum = LogProcessor.GetNumber;

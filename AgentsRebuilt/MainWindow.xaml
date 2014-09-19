@@ -239,16 +239,27 @@
 
         <Grid  Grid.Column="1" Grid.Row="0" >
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
+                <RowDefinition Height="10" />
                 <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
+                <RowDefinition Height="10" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <TextBlock Text="{Binding AuctionCount, Mode=OneWay}" Grid.Column="0" Grid.Row="0" />
+            
             <ItemsControl Name="AuctionsList" ItemTemplate="{StaticResource AuctionTemplate}" Grid.Column="0" Grid.Row="1" 
+                 ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged}" Margin="0, 5, 5, 0">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel IsItemsHost="True" Orientation="Vertical">
+                        </StackPanel>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+            
+            <ItemsControl Name="CommonsList" ItemTemplate="{StaticResource AuctionTemplate}" Grid.Column="0" Grid.Row="3" 
                  ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged}" Margin="0, 5, 5, 0">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
