@@ -16,7 +16,7 @@ namespace AgentsRebuilt
         public ElementStatus st;
         public ObservableCollection<Item> Items;
         public Boolean Minimized = false;
-
+        private int _account = 0;
         private Brush bg;
         private Brush brd;
         private String name;
@@ -35,12 +35,44 @@ namespace AgentsRebuilt
             name = iAgentDataDictionary.GetAgentNameByID(id);
 
             Items = Item.KvpToItems(items, iAgentDataDictionary, uiThread);
+
+            int tsc = 0;
+            Item tIt = null;
+            foreach (var item in Items)
+            {
+                if (item.Key.StartsWith("account"))
+                {
+                    tsc = Int32.Parse(item.Amount);
+                    tIt = item;
+                    break;
+                }
+            }
+
+            _account = tsc;
+
             uiDispatcher = uiThread;
             uiDispatcher.Invoke(() =>
             {
                 bg = new SolidColorBrush(Colors.LightYellow);
                 brd = new SolidColorBrush(ColorAndIconAssigner.GetOrAssignColorById(id));
+                if (tIt!=null) Items.Remove(tIt);
             });
+        }
+
+        public int Account
+        {
+            get { return _account; }
+
+            set
+            {
+
+                uiDispatcher.Invoke(() =>
+                {
+                    _account = value;
+                });
+
+                NotifyPropertyChanged();
+            }
         }
 
         public bool IsExpanded

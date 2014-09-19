@@ -323,6 +323,8 @@ namespace AgentsRebuilt
 
                 }
             }
+
+            oldAgent.Account = newAgent.Account;
         }
 
         private static void UpdateItem(Item oldItem, Item newItem)

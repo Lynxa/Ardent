@@ -15,7 +15,16 @@
         <DataTemplate x:Key="CfgItemTemplate2">
             <TextBlock 
                         Text="{Binding Path=Content, UpdateSourceTrigger=PropertyChanged}"
-                        VerticalAlignment="Center" Background="BlueViolet">
+                        VerticalAlignment="Center"
+                        FontFamily="D:/C# Projects/AgentsRebuilt_05_21/AgentsRebuilt/AgentsRebuilt/Fonts/quartzl-regular.ttf#QuartzL" FontSize="14" Foreground="#FF447340" FontWeight="Bold"
+                >
+            </TextBlock>
+        </DataTemplate>
+        <DataTemplate x:Key="CfgItemTemplate3">
+            <TextBlock 
+                        Text="{Binding Path=Content, UpdateSourceTrigger=PropertyChanged}"
+                        VerticalAlignment="Center"
+                >
             </TextBlock>
         </DataTemplate>
 
@@ -24,7 +33,17 @@
 
     <Grid Margin="-4,-4,0,-3" Name="Grid1">
         <Grid.Resources>
-
+            <Style TargetType="Button" x:Key="TransparentButton">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="Transparent">
+                                <ContentPresenter/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
 
             <DataTemplate x:Key="KVPItemTemplate">
 
@@ -82,7 +101,35 @@
                 </Grid>
             </DataTemplate>
 
+            <DataTemplate x:Key="CommonRightsTemplate">
+                <Button Width="165" Margin="0,0,0,2" Style="{StaticResource TransparentButton}" MouseDoubleClick="CommonRightsItem_Clicked">
+                    <Grid Width="165" Margin="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="165"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="52"></RowDefinition>
+                            <RowDefinition Height="*"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <Border Grid.RowSpan="2" BorderThickness="2" BorderBrush="LightSlateGray" Background="White" />
+                        <WrapPanel Grid.Row="0">
+                            <Image 
+                            Source="{Binding Path=Source}"
+                            Height="48"
+                            Margin="2,2,0,2"
+                            />
+                            <TextBlock
+                            Margin="10,5,0,0"
+                            Text="{Binding Path=Title}"   
+                        />
+                        </WrapPanel>
+
+                    </Grid>
+                </Button>
+            </DataTemplate>
+
             <DataTemplate x:Key="AuctionTemplate">
+                <Button Width="165" Margin="0,0,0,2" Style="{StaticResource TransparentButton}" MouseDoubleClick="CommonRightsItem_Clicked">
                 <Grid Width="165" Margin="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="165"></ColumnDefinition>
@@ -105,6 +152,7 @@
                     </WrapPanel>
 
                 </Grid>
+               </Button>
             </DataTemplate>
 
             <ControlTemplate x:Key="AgentTemplateCollapsed">
@@ -124,10 +172,17 @@
                             Height="48"
                             Margin="2,2,0,2"
                             />
-                        <TextBlock
-                            Margin="10,5,0,0"
-                            Text="{Binding Path=Title}"   
-                        />
+                        <StackPanel>
+                            <TextBlock
+                                Margin="10,5,0,0"
+                                Text="{Binding Path=Title}"   
+                            />
+                            <TextBlock
+                                Margin="10,5,0,0"
+                                Text="{Binding Path=Account, UpdateSourceTrigger=PropertyChanged, StringFormat=Account: {0:#,#}}"   
+                            />
+                            
+                        </StackPanel>
                     </WrapPanel>
 
                 </Grid>
@@ -161,10 +216,17 @@
                             Height="48"
                             Margin="2,2,0,0"
                             />
-                        <TextBlock
-                            Margin="10,5,0,0"
-                            Text="{Binding Path=Title}"   
-                        />
+                        <StackPanel>
+                            <TextBlock
+                                Margin="10,5,0,0"
+                                Text="{Binding Path=Title}"   
+                            />
+                            <TextBlock
+                                Margin="10,5,0,0"
+                                Text="{Binding Path=Account, UpdateSourceTrigger=PropertyChanged, StringFormat=Account: {0:#,#}}"   
+                            />
+
+                        </StackPanel>
                     </WrapPanel>
                     <ListBox Name="listBox1" 
                              ItemsSource="{Binding Source={StaticResource ItemsView}}" 
@@ -239,15 +301,15 @@
 
         <Grid  Grid.Column="1" Grid.Row="0" >
             <Grid.RowDefinitions>
-                <RowDefinition Height="10" />
+                <RowDefinition Height="20" />
                 <RowDefinition Height="*" />
-                <RowDefinition Height="10" />
+                <RowDefinition Height="20" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Text="{Binding AuctionCount, Mode=OneWay}" Grid.Column="0" Grid.Row="0" />
+            <TextBlock Name="AuctionsLabel" Text="{Binding UpdateSourceTrigger=PropertyChanged}" Grid.Column="0" Grid.Row="0" VerticalAlignment="Bottom"/>
             
             <ItemsControl Name="AuctionsList" ItemTemplate="{StaticResource AuctionTemplate}" Grid.Column="0" Grid.Row="1" 
                  ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged}" Margin="0, 5, 5, 0">
@@ -258,12 +320,15 @@
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
-            
-            <ItemsControl Name="CommonsList" ItemTemplate="{StaticResource AuctionTemplate}" Grid.Column="0" Grid.Row="3" 
+
+            <TextBlock Name="CommonsLabel" Text="{Binding UpdateSourceTrigger=PropertyChanged}" Grid.Column="0" Grid.Row="2" VerticalAlignment="Bottom"/>
+
+            <ItemsControl Name="CommonsList" ItemTemplate="{StaticResource CommonRightsTemplate}" Grid.Column="0" Grid.Row="3" 
                  ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged}" Margin="0, 5, 5, 0">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <StackPanel IsItemsHost="True" Orientation="Vertical">
+                        <StackPanel Name="TeStackPanel" IsItemsHost="True" Orientation="Vertical" Margin="0, 2, 0, 0">
+
                         </StackPanel>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
@@ -294,10 +359,12 @@
                         IsSnapToTickEnabled="True"
         />
 
-        <ListBox x:Name="ClockList" Width="140" Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Right"
+        <ListBox x:Name="ClockList" Width="80" Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Right"
                          ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged}"
-                 ItemTemplateSelector="{StaticResource ItemTemplateSelector1}"
-                  Margin="0,32,10,38"/>
+                         ItemTemplate="{StaticResource CfgItemTemplate2}" Margin="0,32,10,38" BorderThickness="0,1,1,1"/>
+        <ListBox x:Name="ClockListNames" Width="100" Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Right"
+                         ItemsSource="{Binding}"
+                         ItemTemplate="{StaticResource CfgItemTemplate3}" Margin="0,32,90,38" BorderThickness="1,1,0,1"/>
         <!--{StaticResource CfgItemTemplate2}" -->
 
         <Button Name="RestartButton" ToolTip="Reset the application, running it with the previously chosen mode from the beginning" HorizontalAlignment="Left" Height="35" Margin="163,77,0,0" Grid.Row="2" VerticalAlignment="Top" Click="Restart" Width="67" IsEnabled="False">Res_tart
@@ -309,9 +376,8 @@
 
         <Button Name="PauseButton" ToolTip="Pause the visualisation run" HorizontalAlignment="Left" Height="35" Margin="236,77,0,0" Grid.Row="2" Click="OnPause" VerticalAlignment="Top" Width="67" IsEnabled="false">
             _Pause</Button>
-        <TextBox Name="LineNumber" Text="0" Grid.Row="2" Margin="406,85,941,39" />
 
-        <Button Click="Go" ToolTip="Move to the state with indicated number" Content="Go" Margin="460,78,845,37" Width="80" Grid.Row="2"/>
+        <!--Button Click="Go" ToolTip="Move to the state with indicated number" Content="Go" Margin="460,78,845,37" Width="80" Grid.Row="2"/-->
 
 
         <!--Button Name="ExiButton" ToolTip="Close the application" Click="OnExit" Content="E_xit" Margin="1007,78,300,37" Width="80" Grid.Row="2"/-->
@@ -330,6 +396,10 @@
         <CheckBox Name="ChkBox" Content="CheckBox" HorizontalAlignment="Left" Height="18" Margin="1139,20,0,0" Grid.Row="2" VerticalAlignment="Top" Width="13"/>
         <Button x:Name="ConfigButton" ToolTip="Change the visualisation configuration" HorizontalAlignment="Left" Height="35" Margin="907,78,0,0" Grid.Row="2" Click="OnConfig" VerticalAlignment="Top" Width="83" RenderTransformOrigin="0.821,0.2" Content="_Config"/>
         <Button x:Name="ExitButton" ToolTip="Close the application" HorizontalAlignment="Left" Height="35" Margin="1009,78,0,0" Grid.Row="2" Click="OnExit" VerticalAlignment="Top" Width="83" RenderTransformOrigin="0.821,0.2" Content="_Exit"/>
+        <Button x:Name="GoButton" ToolTip="Move to the state with indicated number" HorizontalAlignment="Left" Height="35" Margin="463,77,0,0" Grid.Row="2" Click="Go" VerticalAlignment="Top" Width="67" RenderTransformOrigin="0.821,0.2" Content="_Go"/>
+        <!--TextBox  Text="0"  Grid.Column="0" Margin="406,85,941,39" Grid.Row="2"  VerticalAlignment="Top" Width="30" RenderTransformOrigin="0.821,0.2" /-->
+        <TextBox x:Name="LineNumber" HorizontalAlignment="Left" Height="26" Margin="407,81,0,0" Grid.Row="2" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="51"/>
+
 
     </Grid>
 

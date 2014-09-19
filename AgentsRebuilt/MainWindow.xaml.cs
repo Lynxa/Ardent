@@ -30,7 +30,7 @@ namespace AgentsRebuilt
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window, INotifyPropertyChanged
+    public partial class MainWindow : Window
     {
         public CfgSettings Config = new CfgSettings();
 
@@ -123,16 +123,22 @@ namespace AgentsRebuilt
                                                 visualAuctions = ast.Auctions;
                                                 visualCommons = ast.CommonRights;
                                                 tradeLog = new ObservableCollection<string>() {};
+
                                                 AgentsList.DataContext = visualAgents;
                                                 AuctionsList.DataContext = visualAuctions;
                                                 CommonsList.DataContext = visualCommons;
+                                               
                                                 ast.Clock.StepNo = LogProcessor.GetIndex;
                                                 ClockList.DataContext = ast.Clock.TextList;
+                                                ClockListNames.DataContext = ast.Clock.TextListNames;
                                                 MainSlider.Maximum = LogProcessor.GetNumber;
                                                 MainSlider.Value = LogProcessor.GetIndex;
                                                 TradeChannel.DataContext = tradeLog;
                                                 if (ast.Event != null && ast.Event.Message != "")
                                                     tradeLog.Add(ast.Event.Message);
+
+                                                AuctionsLabel.Text =  ast.Auctions != null && ast.Auctions.Count!=0 ? "Auctions" : "";
+                                                CommonsLabel.Text = ast.CommonRights != null && ast.CommonRights.Count != 0 ? "Common rights" : "";
                                                 /*
                                         bb.BorderThickness = new Thickness(1);
                                         bb.BorderBrush = new SolidColorBrush(Colors.Black);
@@ -161,6 +167,9 @@ namespace AgentsRebuilt
                                                         TradeChannel.Items[TradeChannel.Items.Count - 1]);
                                                 }
 
+                                                AuctionsLabel.Text = ast.Auctions != null && ast.Auctions.Count != 0 ? "Auctions" : "";
+                                                CommonsLabel.Text = ast.CommonRights != null && ast.CommonRights.Count != 0 ? "Common rights" : "";
+                                                //znaju, chto kostyl'. No sil moih net vozit'sja dal'she s data bindingom.
                                             });
                                         }
                                     }
@@ -204,6 +213,7 @@ namespace AgentsRebuilt
                                         visualAgents = ast.Agents;
                                         AgentsList.DataContext = visualAgents;
                                         ClockList.DataContext = ast.Clock.TextList;
+                                        ClockListNames.DataContext = ast.Clock.TextListNames;
                                         MainSlider.Value = LogProcessor.GetIndex;
                                         ast.Clock.StepNo = LogProcessor.GetIndex;
                                         if (ast.Event != null && ast.Event.Message != "") tradeLog.Add(ast.Event.Message);
@@ -270,14 +280,6 @@ namespace AgentsRebuilt
                 }
         }
 
-        private void KVPItem_Clicked(object sender, RoutedEventArgs e)
-        {
-            var item = sender as ListBoxItem;
-            Item tp = (Item) item.DataContext;
-            Window frm3 = new ItemWindow(tp);
-            frm3.Show();
-            //MessageBox.Show("suspicious "+ tp.InstanceOf);
-        }
 
         #region Config
 
@@ -526,18 +528,22 @@ namespace AgentsRebuilt
             tp.IsExpanded = !tp.IsExpanded;
         }
 
-        private int AuctionCount 
+
+        private void KVPItem_Clicked(object sender, RoutedEventArgs e)
         {
-            get { return ast!=null&&ast.Auctions!=null?ast.Auctions.Count:0; }
+            var item = sender as ListBoxItem;
+            Item tp = (Item)item.DataContext;
+            Window frm3 = new ItemWindow(tp);
+            frm3.Show();
+            //MessageBox.Show("suspicious "+ tp.InstanceOf);
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        [NotifyPropertyChangedInvocator]
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        private void CommonRightsItem_Clicked(object sender, MouseButtonEventArgs e)
         {
-            PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
+            var item = sender as System.Windows.Controls.Button;
+            Item tp = (Item)item.DataContext;
+            Window frm3 = new ItemWindow(tp);
+            frm3.Show();
         }
     }
 }
