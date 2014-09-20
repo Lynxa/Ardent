@@ -327,6 +327,12 @@ namespace AgentsRebuilt
             if (state == ExecutionState.Paused)
             {
                 state = ExecutionState.Running;
+                RunButton.IsEnabled = false;
+                FollowButton.IsEnabled = true;
+                RestartButton.IsEnabled = true;
+                StopButton.IsEnabled = true;
+                PauseButton.IsEnabled = true;
+                ConfigButton.IsEnabled = false;
                 _stopSleeping = true;
             }
             if (state == ExecutionState.Following)
@@ -486,12 +492,14 @@ namespace AgentsRebuilt
                         {
                             isFirstLine = true;
                             LogProcessor.SetIndex(0);
-                            state = ExecutionState.Running;
+                            _previousState = state;
+                            state = ExecutionState.Moving;
                         }
                         else
                         {
                             isFirstLine = true;
                             LogProcessor.SetIndex(tp - 1);
+                            _previousState = state;
                             state = ExecutionState.Moving;
                         }
                     }

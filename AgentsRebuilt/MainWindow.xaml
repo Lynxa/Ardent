@@ -16,7 +16,7 @@
             <TextBlock 
                         Text="{Binding Path=Content, UpdateSourceTrigger=PropertyChanged}"
                         VerticalAlignment="Center"
-                        FontFamily="D:/C# Projects/AgentsRebuilt_05_21/AgentsRebuilt/AgentsRebuilt/Fonts/quartzl-regular.ttf#QuartzL" FontSize="14" Foreground="#FF447340" FontWeight="Bold"
+                        FontFamily="./#QuartzL" FontSize="14" Foreground="#FF447340" FontWeight="Bold"
                 >
             </TextBlock>
         </DataTemplate>
@@ -179,7 +179,7 @@
                             />
                             <TextBlock
                                 Margin="10,5,0,0"
-                                Text="{Binding Path=Account, UpdateSourceTrigger=PropertyChanged, StringFormat=Account: {0:#,#}}"   
+                                Text="{Binding Path=Account, UpdateSourceTrigger=PropertyChanged, StringFormat=Account: {0:#}}"   
                             />
                             
                         </StackPanel>
@@ -223,7 +223,7 @@
                             />
                             <TextBlock
                                 Margin="10,5,0,0"
-                                Text="{Binding Path=Account, UpdateSourceTrigger=PropertyChanged, StringFormat=Account: {0:#,#}}"   
+                                Text="{Binding Path=Account, UpdateSourceTrigger=PropertyChanged, StringFormat=Account: {0:#}}"   
                             />
 
                         </StackPanel>
