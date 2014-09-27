@@ -27,8 +27,6 @@
                 >
             </TextBlock>
         </DataTemplate>
-
-
     </Window.Resources>
 
     <Grid Margin="-4,-4,0,-3" Name="Grid1">
@@ -201,6 +199,7 @@
                         </CollectionViewSource>
 
                     </Grid.Resources>
+
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="165"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
@@ -221,11 +220,10 @@
                                 Margin="10,5,0,0"
                                 Text="{Binding Path=Title}"   
                             />
-                            <TextBlock
+                            <TextBlock Opacity="0"
                                 Margin="10,5,0,0"
                                 Text="{Binding Path=Account, UpdateSourceTrigger=PropertyChanged, StringFormat=Account: {0:#}}"   
                             />
-
                         </StackPanel>
                     </WrapPanel>
                     <ListBox Name="listBox1" 
@@ -268,12 +266,50 @@
 
             <DataTemplate x:Key="AgentTemplate">
                 <Control x:Name="theControl" 
-                         Template="{StaticResource AgentTemplateCollapsed}" />
-                <DataTemplate.Triggers>
-                    <DataTrigger Binding="{Binding Path=IsExpanded, UpdateSourceTrigger=PropertyChanged}" Value="True">
-                        <Setter TargetName="theControl" Property="Template"
-                    Value="{StaticResource AgentTemplateExpanded}" />
+                         Template="{StaticResource AgentTemplateCollapsed}" Opacity="0"
+                         >
+                    <Control.Triggers>
+                        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                     Duration="00:00:02"
+                                                     From="0"
+                                                     To="1" />
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                        <EventTrigger RoutedEvent="FrameworkElement.Unloaded">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                     Duration="00:00:05"
+                                                     From="1"
+                                                     To="0" />
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </Control.Triggers>
+                    </Control>
+                    <DataTemplate.Triggers>
+                        <DataTrigger Binding="{Binding Path=IsExpanded, UpdateSourceTrigger=PropertyChanged}" Value="True">
+                            <Setter TargetName="theControl" Property="Template"
+                            Value="{StaticResource AgentTemplateExpanded}" />
                     </DataTrigger>
+                    <DataTrigger Binding="{Binding Path=Status, UpdateSourceTrigger=PropertyChanged}" Value="Deleted">
+                        <DataTrigger.EnterActions>
+                            <!-- you could actually just plop the storyboard right here instead of calling it as a resource, whatever suits your needs really -->
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                     Duration="00:00:03"
+                                                     From="1"
+                                                     To="0" />
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </DataTrigger.EnterActions>
+                    </DataTrigger>
+
                 </DataTemplate.Triggers>
             </DataTemplate>
 
@@ -372,7 +408,7 @@
         <Button Name="RunButton" ToolTip="Go over log records at the indicated speed" HorizontalAlignment="Left" Height="35" Margin="17,77,0,0" Grid.Row="2" Click="OnRun" VerticalAlignment="Top" Width="67" RenderTransformOrigin="0.821,0.2">
             _Run
         </Button>
-        <Button x:Name="FollowButton" ToolTip="Go over log records, keeping the indicated distance from the last state" HorizontalAlignment="Left" Height="35" Margin="90,77,0,0" Grid.Row="2" Click="OnFollow" VerticalAlignment="Top" Width="67" RenderTransformOrigin="0.821,0.2" Content="_Follow"/>
+        <Button x:Name="FollowButton" ToolTip="Go over log records, keeping the indicated distance from the last execState" HorizontalAlignment="Left" Height="35" Margin="90,77,0,0" Grid.Row="2" Click="OnFollow" VerticalAlignment="Top" Width="67" RenderTransformOrigin="0.821,0.2" Content="_Follow"/>
 
         <Button Name="PauseButton" ToolTip="Pause the visualisation run" HorizontalAlignment="Left" Height="35" Margin="236,77,0,0" Grid.Row="2" Click="OnPause" VerticalAlignment="Top" Width="67" IsEnabled="false">
             _Pause</Button>
@@ -387,16 +423,17 @@
         <CheckBox Name="CheckBox1" Content="Actual" HorizontalAlignment="Left" Height="17" Margin="701,108,0,0" Grid.Row="2" VerticalAlignment="Top" Width="82" Checked="CheckBox1_Checked" Unchecked="CheckBox1_Unchecked"/>
         <Slider Name="SpeedSlider" HorizontalAlignment="Left" Height="26" Margin="701,77,0,0" Grid.Row="2" VerticalAlignment="Top" Width="114" 
                 TickPlacement="TopLeft" 
-                ToolTip="Period of state changes during the visualisation run. When actual is checked, state changes are reflected with the speed they originally happened"
+                ToolTip="Period of execState changes during the visualisation run. When actual is checked, execState changes are reflected with the speed they originally happened"
                 ValueChanged="Slider_ValueChanged" 
                 Minimum="0.5"
                 Maximum="3"
-                Ticks="0.5, 1, 1.5, 2, 2.5, 3"/>
+                Ticks="0.5, 1, 1.5, 2, 2.5, 3"
+                Value="3"/>
         <Label Content="State change&#x0a;period (sec):" HorizontalAlignment="Left" Margin="605,77,0,0" Grid.Row="2" VerticalAlignment="Top"/>
-        <CheckBox Name="ChkBox" Content="CheckBox" HorizontalAlignment="Left" Height="18" Margin="1139,20,0,0" Grid.Row="2" VerticalAlignment="Top" Width="13"/>
+        <CheckBox Name="ChkBox" Content="CheckBox" HorizontalAlignment="Left" Height="18" Margin="1139,20,0,0" Grid.Row="2" VerticalAlignment="Top" Width="13" Visibility="Collapsed"/>
         <Button x:Name="ConfigButton" ToolTip="Change the visualisation configuration" HorizontalAlignment="Left" Height="35" Margin="907,78,0,0" Grid.Row="2" Click="OnConfig" VerticalAlignment="Top" Width="83" RenderTransformOrigin="0.821,0.2" Content="_Config"/>
         <Button x:Name="ExitButton" ToolTip="Close the application" HorizontalAlignment="Left" Height="35" Margin="1009,78,0,0" Grid.Row="2" Click="OnExit" VerticalAlignment="Top" Width="83" RenderTransformOrigin="0.821,0.2" Content="_Exit"/>
-        <Button x:Name="GoButton" ToolTip="Move to the state with indicated number" HorizontalAlignment="Left" Height="35" Margin="463,77,0,0" Grid.Row="2" Click="Go" VerticalAlignment="Top" Width="67" RenderTransformOrigin="0.821,0.2" Content="_Go"/>
+        <Button x:Name="GoButton" ToolTip="Move to the execState with indicated number" HorizontalAlignment="Left" Height="35" Margin="463,77,0,0" Grid.Row="2" Click="Go" VerticalAlignment="Top" Width="67" RenderTransformOrigin="0.821,0.2" Content="_Go"/>
         <!--TextBox  Text="0"  Grid.Column="0" Margin="406,85,941,39" Grid.Row="2"  VerticalAlignment="Top" Width="30" RenderTransformOrigin="0.821,0.2" /-->
         <TextBox x:Name="LineNumber" HorizontalAlignment="Left" Height="26" Margin="407,81,0,0" Grid.Row="2" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="51"/>
 

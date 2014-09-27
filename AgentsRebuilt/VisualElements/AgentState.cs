@@ -8,7 +8,7 @@ using Microsoft.Win32;
 
 namespace AgentsRebuilt
 {
-    class AgentState
+    internal class AgentState
     {
         public Clock Clock;
         public ObservableCollection <Agent> Agents = new ObservableCollection<Agent>();

@@ -7,14 +7,22 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Annotations;
+using System.Windows.Forms;
+using System.Windows.Threading;
 
 namespace AgentsRebuilt
 {
 
 
-    public class LogProcessor
+    internal class LogProcessor
     {
-        private static List<String> _log;
+        //private static List<String> _log;
+        private static List<AgentState> _states;
+        private static List<String> _agts = new List<string>() {"god"};
+
+        private static AgentDataDictionary _dataDictionary;
+        private static Dispatcher _mainDispatcher;
+
         private static int Index = 0;
         private static int _latency = 0;
 
@@ -26,19 +34,19 @@ namespace AgentsRebuilt
 
         public static int GetNumber
         {
-            get { return _log.Count; }
+            get { return _states.Count; }
         }
 
 
         public static void SetCurrentLatency()
         {
-            _latency = _log.Count - Index;
+            _latency = _states.Count - Index;
         }
 
         public static bool SetIndex(int num)
         {
-            if (_log == null) return false;
-            if (num > -1 && num < _log.Count)
+            if (_states == null) return false;
+            if (num > -1 && num < _states.Count)
             {
                 Index = num;
                 return true;
@@ -49,75 +57,78 @@ namespace AgentsRebuilt
             }
         }
 
-        public static void InitOrReread(String filename)
+        public static void InitOrReread(String filename, AgentDataDictionary _agentData, Dispatcher _dispatcher)
         {
             //VIK -- add check for whether file exists
-            _log = System.IO.File.ReadAllLines(filename).ToList<String>();
+            _dataDictionary = _agentData;
+            _mainDispatcher = _dispatcher;
+            _states = new List<AgentState>();
+            
+
+            var _log = System.IO.File.ReadAllLines(filename).ToList<String>();
             _log = RemoveEmpty(_log);
+
+            foreach (var line in _log)
+            {
+                KVP tResKvp = null;
+                tResKvp = DecipherLine(line);
+                if (tResKvp != null)
+                {
+                    AgentState tst = null;
+                    try
+                    {
+                        tst = StateObjectMapper.MapState(tResKvp, _dataDictionary, _mainDispatcher);
+                    }
+                    catch(Exception)
+                    {
+                        //can write something somewhere in running log, but I seriously doubt this program will ever be that sophisticated.
+                    }
+                    if (tst != null)
+                    {
+                        _states.Add(tst);
+                        foreach (var ag in tst.Agents)
+                        {
+                            if (!_agts.Contains(ag.ID)) _agts.Add(ag.ID);
+                        }
+                    }
+
+                }
+            }
+
             _latency = GetNumber;
         }
 
-        /// <summary>
-        /// WARNING!!! getting first line sets the index to 0!!!
-        /// </summary>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        public static bool GetFirstLineAndReset(out KVP result)
+        public static bool GetNextLine(out AgentState result, ExecutionState execState)
         {
-            Index = 0;
-            KVP tResKvp = null;
-            while (tResKvp == null && _log.Count > Index)
+            AgentState sTate = null;
+            if (execState == ExecutionState.Running || execState == ExecutionState.Moving)
             {
-                Index++;
-                tResKvp = DecipherLogLine(Index - 1);
-            }
-            result = tResKvp;
-            return (tResKvp != null);
-        }
-
-        public static bool GetNextLine(out KVP result, ExecutionState execState)
-        {
-            KVP tResKvp=null;
-            if (execState == ExecutionState.Running)
-            {
-                while (tResKvp == null && _log.Count > Index)
+                if (_states.Count > Index)
                 {
+                    sTate = _states[Index];
                     Index++;
                     _latency--;
-                    tResKvp = DecipherLogLine(Index - 1);
                 }
             }
             else if (execState == ExecutionState.Following)
             {
-                while (tResKvp == null && _log.Count > Index && _latency <= (_log.Count - Index))
+                if (_states.Count > Index  && _latency <= (_states.Count - Index))
                 {
+                    sTate = _states[Index];
                     Index++;
-                    tResKvp = DecipherLogLine(Index - 1);
                 }
             }
-            result = tResKvp;
-            return (tResKvp!=null);
+            result = sTate;
+            return (sTate!=null);
         }
 
-        public static bool GetLastLine(out KVP result)
+        public static bool GetLastLine(out AgentState result)
         {
-            KVP tResKvp = null;
-            Index = _log.Count - 1;
-            while (tResKvp == null &&  Index>=0)
-            {
-                Index--;
-                tResKvp = DecipherLogLine(Index + 1);
-            }
-            result = tResKvp;
-            return (tResKvp != null);
+            Index = _states.Count - 1;
+            var sTate = _states[Index];
+            result = sTate;
+            return (sTate != null);
         }
-
-        public static KVP DecipherLogLine(int number)
-        {
-                if (_log.Count <= number) return null;
-                return DecipherLine(_log.ElementAt(number));
-        }
-
 
         public static KVP DecipherLine(String msg)
         {
@@ -252,4 +263,45 @@ namespace AgentsRebuilt
             return null;
         }
     }
+
+    internal class ComplexLog
+    {
+        private List<Dictionary<String, AgentState>> _dict;
+        public AgentState this[String agent, int i]
+        {
+            get
+            {
+                AgentState hState;
+                if (_dict[i].TryGetValue(agent, out hState)) return hState;
+                return null;
+            }
+        }
+
+        private Dictionary<String, AgentState> GetDictByTimeStamp(AgentState ag)
+        {
+            String hAt = ag.Clock.HappenedAt;
+            foreach (var dict in _dict)
+            {
+                foreach (var agentState in dict.Values)
+                {
+                    if (agentState.Clock.HappenedAt.Equals(hAt))
+                    {
+                        return dict;
+                    }
+                }
+            }
+            return null;
+        }
+
+        internal void Add(AgentState state, Agent ag)
+        {
+            var dc = GetDictByTimeStamp(state);
+            if (dc != null && !dc.ContainsKey(ag.ID))
+            {
+                dc.Add(ag.ID, state);
+            }
+
+        }
+    }
 }
+

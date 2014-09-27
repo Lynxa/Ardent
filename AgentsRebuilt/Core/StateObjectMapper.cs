@@ -13,7 +13,7 @@ namespace AgentsRebuilt
 {
     static class StateObjectMapper
     {
-        public static AgentState MapState(KVP root,AgentDataDictionary _agentDataDictionary, Dispatcher uiThread)
+        public static AgentState MapState(KVP root, AgentDataDictionary _agentDataDictionary, Dispatcher uiThread)
         {
             ObservableCollection<Agent> agList = new ObservableCollection <Agent>();
             ObservableCollection<Item> aucList = new ObservableCollection<Item>();
@@ -94,9 +94,8 @@ namespace AgentsRebuilt
             return state;
         }
 
-        public static void UpdateState (KVP root, AgentState oldState,AgentDataDictionary _agentDataDictionary, Dispatcher uiThread)
+        public static void UpdateState (AgentState newState, AgentState oldState,AgentDataDictionary _agentDataDictionary, Dispatcher uiThread)
         {
-            AgentState newState = MapState(root, _agentDataDictionary, uiThread);
             oldState.Clock.HappenedAt = newState.Clock.HappenedAt;
             oldState.Clock.ExpiredAt = newState.Clock.ExpiredAt;
             oldState.Clock.SetTextList();
