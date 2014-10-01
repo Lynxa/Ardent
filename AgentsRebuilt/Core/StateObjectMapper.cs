@@ -28,10 +28,13 @@ namespace AgentsRebuilt
                 {
                     state.Clock = new Clock(kvp);
                 }
-                if (kvp.Key.StartsWith("mekeke"))
+
+                Item tItem = Item.KvpToItem(kvp, _agentDataDictionary, uiThread);
+                if (tItem.InstanceOf.StartsWith("english"))
                 {
-                    aucList.Add(Item.KvpToItem(kvp, _agentDataDictionary, uiThread));
+                    aucList.Add(tItem);
                 }
+
                 else if (kvp.Key.StartsWith("event"))
                 {
                     //VIK - for future use

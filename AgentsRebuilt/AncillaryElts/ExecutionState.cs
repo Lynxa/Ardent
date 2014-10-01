@@ -13,6 +13,7 @@ namespace AgentsRebuilt
         Moving,
         Paused,
         Stopped,
+        Switching,
         Void
     }
 }

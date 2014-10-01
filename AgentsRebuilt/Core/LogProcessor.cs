@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows.Annotations;
 using System.Windows.Forms;
@@ -14,36 +15,53 @@ namespace AgentsRebuilt
 {
 
 
-    internal class LogProcessor
+    internal class LogProcessor : INotifyPropertyChanged
     {
         //private static List<String> _log;
-        private static List<AgentState> _states;
-        private static List<String> _agts = new List<string>() {"god"};
+        private ComplexLog _states;
+        private List<String> _agts = new List<string>() {"god"};
+        private List<String> _agentsWithLogAvailable = new List<string>() {"god"};
 
-        private static AgentDataDictionary _dataDictionary;
-        private static Dispatcher _mainDispatcher;
+        private String _currentAgent ;
 
-        private static int Index = 0;
-        private static int _latency = 0;
+        private AgentDataDictionary _dataDictionary;
+        private Dispatcher _mainDispatcher;
 
-        public static int GetIndex
+        private int _index = 0;
+        private int _latency = 0;
+
+        public int Index
         {
-            get { return Index; }
-
+            get { return _index; }
+            set
+            {
+                _index = value;
+                NotifyPropertyChanged();
+            }
         }
 
-        public static int GetNumber
+        
+        public int GetNumber
         {
             get { return _states.Count; }
         }
 
-
-        public static void SetCurrentLatency()
+        public string CurrentAgent
         {
-            _latency = _states.Count - Index;
+            get { return _currentAgent; }
+            set
+            {
+                _currentAgent = value;
+                NotifyPropertyChanged();
+            }
         }
 
-        public static bool SetIndex(int num)
+        public void SetCurrentLatency()
+        {
+            _latency = _states.Count - _index;
+        }
+
+        public bool SetIndex(int num)
         {
             if (_states == null) return false;
             if (num > -1 && num < _states.Count)
@@ -57,13 +75,13 @@ namespace AgentsRebuilt
             }
         }
 
-        public static void InitOrReread(String filename, AgentDataDictionary _agentData, Dispatcher _dispatcher)
+        public void InitOrReread(String filename, AgentDataDictionary _agentData, Dispatcher _dispatcher, String curAgent)
         {
             //VIK -- add check for whether file exists
             _dataDictionary = _agentData;
             _mainDispatcher = _dispatcher;
-            _states = new List<AgentState>();
-            
+            _states = new ComplexLog();
+            _currentAgent = curAgent;
 
             var _log = System.IO.File.ReadAllLines(filename).ToList<String>();
             _log = RemoveEmpty(_log);
@@ -85,10 +103,43 @@ namespace AgentsRebuilt
                     }
                     if (tst != null)
                     {
-                        _states.Add(tst);
+                        _states.Add(tst, "god");
                         foreach (var ag in tst.Agents)
                         {
-                            if (!_agts.Contains(ag.ID)) _agts.Add(ag.ID);
+                            if (!_agts.Contains(ag.ID))
+                            {
+                                _agts.Add(ag.ID);
+                                String agFile = filename.Remove(filename.LastIndexOf("."), 3);
+                                agFile += "_" + ag.ID + ".db";
+                                if (File.Exists(agFile))
+                                {
+                                    List<String> agLog = File.ReadAllLines(agFile).ToList<String>();
+                                    agLog = RemoveEmpty(agLog);
+                                    _agentsWithLogAvailable.Add(ag.ID);
+                                    foreach (var l2 in agLog)
+                                    {
+                                        KVP tKvp = null;
+                                        tKvp = DecipherLine(l2);
+                                        if (tKvp != null)
+                                        {
+                                            AgentState tst2 = null;
+                                            try
+                                            {
+                                                tst2 = StateObjectMapper.MapState(tKvp, _dataDictionary, _mainDispatcher);
+                                            }
+                                            catch (Exception)
+                                            {
+                                            }
+                                            if (tst2 != null)
+                                            {
+                                                _states.Add(tst2, ag.ID);
+                                            }
+                                        }
+                                    }
+
+                                }
+                            }
+                            
                         }
                     }
 
@@ -98,14 +149,19 @@ namespace AgentsRebuilt
             _latency = GetNumber;
         }
 
-        public static bool GetNextLine(out AgentState result, ExecutionState execState)
+        public bool IsAgentLogAvailable(String id)
+        {
+            return _agentsWithLogAvailable.Contains(id);
+        }
+
+        public bool GetNextLine(out AgentState result, ExecutionState execState)
         {
             AgentState sTate = null;
             if (execState == ExecutionState.Running || execState == ExecutionState.Moving)
             {
                 if (_states.Count > Index)
                 {
-                    sTate = _states[Index];
+                    sTate = _states[_currentAgent,Index];
                     Index++;
                     _latency--;
                 }
@@ -114,7 +170,7 @@ namespace AgentsRebuilt
             {
                 if (_states.Count > Index  && _latency <= (_states.Count - Index))
                 {
-                    sTate = _states[Index];
+                    sTate = _states[_currentAgent, Index];
                     Index++;
                 }
             }
@@ -122,10 +178,22 @@ namespace AgentsRebuilt
             return (sTate!=null);
         }
 
-        public static bool GetLastLine(out AgentState result)
+        public bool GetThisLine(out AgentState result, ExecutionState execState)
+        {
+            AgentState sTate = null;
+            if (_states.Count > Index && Index > 0)
+            {
+                sTate = _states[_currentAgent, Index-1];
+            }
+            
+            result = sTate;
+            return (sTate != null);
+        }
+
+        public bool GetLastLine(out AgentState result)
         {
             Index = _states.Count - 1;
-            var sTate = _states[Index];
+            var sTate = _states[_currentAgent, Index];
             result = sTate;
             return (sTate != null);
         }
@@ -262,11 +330,21 @@ namespace AgentsRebuilt
 
             return null;
         }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
     }
 
     internal class ComplexLog
     {
-        private List<Dictionary<String, AgentState>> _dict;
+        private List<Dictionary<String, AgentState>> _dict = new List<Dictionary<string, AgentState>>();
         public AgentState this[String agent, int i]
         {
             get
@@ -279,12 +357,12 @@ namespace AgentsRebuilt
 
         private Dictionary<String, AgentState> GetDictByTimeStamp(AgentState ag)
         {
-            String hAt = ag.Clock.HappenedAt;
+            String hAt = ag.Clock.TimeStampH;
             foreach (var dict in _dict)
             {
                 foreach (var agentState in dict.Values)
                 {
-                    if (agentState.Clock.HappenedAt.Equals(hAt))
+                    if (agentState.Clock.TimeStampH.Equals(hAt))
                     {
                         return dict;
                     }
@@ -293,14 +371,25 @@ namespace AgentsRebuilt
             return null;
         }
 
-        internal void Add(AgentState state, Agent ag)
+        internal void Add(AgentState state, String ag)
         {
             var dc = GetDictByTimeStamp(state);
-            if (dc != null && !dc.ContainsKey(ag.ID))
+            if (dc != null && !dc.ContainsKey(ag))
             {
-                dc.Add(ag.ID, state);
+                dc.Add(ag, state);
+            }
+            else
+            {
+                var ddc = new Dictionary<String, AgentState>();
+                ddc.Add(ag, state);
+                _dict.Add(ddc);
             }
 
+        }
+
+        public int Count 
+        {
+            get { return _dict.Count; } 
         }
     }
 }

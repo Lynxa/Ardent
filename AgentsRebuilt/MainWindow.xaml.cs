@@ -33,6 +33,7 @@ namespace AgentsRebuilt
     public partial class MainWindow : Window
     {
         public CfgSettings Config = new CfgSettings();
+        private LogProcessor _logProcessor = new LogProcessor();
 
         private ExecutionState execState = ExecutionState.Void;
         private ExecutionState _previousState = ExecutionState.Void;
@@ -41,10 +42,12 @@ namespace AgentsRebuilt
         private AgentState ast = null;
         private String _lockerLogProcessorIndex = "meta";
         private bool _is_actual = false;
+        private String _currentAgent = "god";
 
         private AgentDataDictionary _agentDataDictionary;
         private double _statePeriod;
         private bool _stopSleeping=false;
+
         public class NameMultiValueConverter : IMultiValueConverter
         {
             public object Convert(object[] values, Type targetType, object parameter,
@@ -93,7 +96,7 @@ namespace AgentsRebuilt
                     
                     Dispatcher dsc = this.Dispatcher;
 
-                    LogProcessor.InitOrReread(Config.HistPath, _agentDataDictionary, dsc);
+                    _logProcessor.InitOrReread(Config.HistPath, _agentDataDictionary, dsc, _currentAgent);
                     Item.cfgSettings = Config;
                     AgentState newState;
 
@@ -110,18 +113,28 @@ namespace AgentsRebuilt
                         {
                             lock (_lockerLogProcessorIndex)
                             {
-                                if (execState == ExecutionState.Running || execState == ExecutionState.Following ||execState==ExecutionState.Moving)
+                                if (execState == ExecutionState.Running || execState == ExecutionState.Following ||execState==ExecutionState.Moving 
+                                    || execState == ExecutionState.Switching)
                                 {
-                                    Boolean isLine = LogProcessor.GetNextLine(out newState, execState);
+                                    Boolean isLine;
+
+                                    if (execState != ExecutionState.Switching)
+                                    {
+                                        isLine = _logProcessor.GetNextLine(out newState, execState);
+                                    }
+                                    else
+                                    {
+                                        isLine = _logProcessor.GetThisLine(out newState, execState);
+                                    }
                                     _stopSleeping = false;
                                     if (isLine)
                                     {
-                                        if (isFirstLine || ast == null || execState == ExecutionState.Moving)
+                                        if (isFirstLine || ast == null || execState == ExecutionState.Moving || execState==ExecutionState.Switching)
                                         {
                                             if (execState == ExecutionState.Moving)
                                             {
                                                 AgentState secondState;
-                                                if (LogProcessor.GetNextLine(out secondState, ExecutionState.Running))
+                                                if (_logProcessor.GetNextLine(out secondState, ExecutionState.Running))
                                                 {
                                                     StateObjectMapper.UpdateState(secondState, newState, _agentDataDictionary, dsc);
                                                 }
@@ -138,18 +151,21 @@ namespace AgentsRebuilt
                                                 AgentsList.DataContext = visualAgents;
                                                 AuctionsList.DataContext = visualAuctions;
                                                 CommonsList.DataContext = visualCommons;
-                                               
-                                                ast.Clock.StepNo = LogProcessor.GetIndex;
+
+                                                ast.Clock.StepNo = _logProcessor.Index;
                                                 ClockList.DataContext = ast.Clock.TextList;
                                                 ClockListNames.DataContext = ast.Clock.TextListNames;
-                                                MainSlider.Maximum = LogProcessor.GetNumber;
-                                                MainSlider.Value = LogProcessor.GetIndex;
+                                                MainSlider.Maximum = _logProcessor.GetNumber;
+                                                MainSlider.Value = _logProcessor.Index;
                                                 TradeChannel.DataContext = tradeLog;
                                                 if (ast.Event != null && ast.Event.Message != "")
                                                     tradeLog.Add(ast.Event.Message);
 
                                                 AuctionsLabel.Text =  ast.Auctions != null && ast.Auctions.Count!=0 ? "Auctions" : "";
                                                 CommonsLabel.Text = ast.CommonRights != null && ast.CommonRights.Count != 0 ? "Common rights" : "";
+                                                IndexBlock.DataContext = _logProcessor;
+                                                AgentBlock.DataContext = _logProcessor;
+
                                                 /*
                                         bb.BorderThickness = new Thickness(1);
                                         bb.BorderBrush = new SolidColorBrush(Colors.Black);
@@ -160,16 +176,16 @@ namespace AgentsRebuilt
                                         */
                                             });
                                             isFirstLine = false;
-                                            if (execState == ExecutionState.Moving) execState = _previousState;
+                                            if (execState == ExecutionState.Moving || execState == ExecutionState.Switching) execState = _previousState;
                                         }
                                         else
                                         {
                                             StateObjectMapper.UpdateState(newState, ast, _agentDataDictionary, dsc);
                                             dsc.Invoke(() =>
                                             {
-                                                ast.Clock.StepNo = LogProcessor.GetIndex;
-                                                MainSlider.Value = LogProcessor.GetIndex;
-                                                MainSlider.Maximum = LogProcessor.GetNumber;
+                                                ast.Clock.StepNo = _logProcessor.Index;
+                                                MainSlider.Value = _logProcessor.Index;
+                                                MainSlider.Maximum = _logProcessor.GetNumber;
                                                 if (tradeLog == null) tradeLog = new ObservableCollection<string>();
                                                 if (ast.Event != null && ast.Event.Message != "")
                                                     tradeLog.Add(ast.Event.Message);
@@ -188,7 +204,7 @@ namespace AgentsRebuilt
 
                                     else
                                     {
-                                        LogProcessor.InitOrReread(Config.HistPath, _agentDataDictionary, Dispatcher);
+                                        _logProcessor.InitOrReread(Config.HistPath, _agentDataDictionary, Dispatcher, _currentAgent);
 
                                     }
                                 }
@@ -254,8 +270,8 @@ namespace AgentsRebuilt
                             {
 
                                 double i1, i2;
-                                if (ast != null && ast.Clock != null && Double.TryParse(ast.Clock.HappenedAt.Replace(".", ","), out i1)
-                                    && Double.TryParse(ast.Clock.ExpiredAt.Replace(".", ","), out i2))
+                                if (ast != null && ast.Clock != null && Double.TryParse(ast.Clock.TimeStampH.Replace(".", ","), out i1)
+                                    && Double.TryParse(ast.Clock.TimeStampE.Replace(".", ","), out i2))
                                 {
                                     delay = (int) ((i2 - i1)*1000);
                                 }
@@ -330,7 +346,7 @@ namespace AgentsRebuilt
                     StopButton.IsEnabled = true;
                     PauseButton.IsEnabled = true;
                     ConfigButton.IsEnabled = false;
-                    LogProcessor.SetIndex(0);
+                    _logProcessor.SetIndex(0);
                     isFirstLine = true;
                     MainSlider.Value = 0;
 
@@ -372,7 +388,7 @@ namespace AgentsRebuilt
                     StopButton.IsEnabled = true;
                     PauseButton.IsEnabled = true;
                     ConfigButton.IsEnabled = false;
-                    LogProcessor.SetIndex(0);
+                    _logProcessor.SetIndex(0);
                     isFirstLine = true;
                     MainSlider.Value = 0;
 
@@ -387,7 +403,7 @@ namespace AgentsRebuilt
             }
             if (execState == ExecutionState.Running)
             {
-                LogProcessor.SetCurrentLatency();
+                _logProcessor.SetCurrentLatency();
                 execState = ExecutionState.Following;
                 RunButton.IsEnabled = true;
                 FollowButton.IsEnabled = false;
@@ -426,7 +442,7 @@ namespace AgentsRebuilt
         private void Restart(object sender, RoutedEventArgs e)
         {
             isFirstLine = true;
-            LogProcessor.SetIndex(0);
+            _logProcessor.SetIndex(0);
             MainSlider.Value = 0;
             _stopSleeping = true;
         }
@@ -440,7 +456,7 @@ namespace AgentsRebuilt
                 lock (_lockerLogProcessorIndex)
                 {
                     bool t = Int32.TryParse(text, out tp);
-                    if (!t || LogProcessor.GetNumber < tp || tp < 0)
+                    if (!t || _logProcessor.GetNumber < tp || tp < 0)
                     {
                         System.Windows.MessageBox.Show("Illegal step number");
                         return;
@@ -449,14 +465,14 @@ namespace AgentsRebuilt
                     if (tp == 0)
                     {
                         isFirstLine = true;
-                        LogProcessor.SetIndex(0);
+                        _logProcessor.SetIndex(0);
                         _previousState = execState;
                         execState = ExecutionState.Moving;
                     }
                     else
                     {
                         isFirstLine = true;
-                        LogProcessor.SetIndex(tp - 1);
+                        _logProcessor.SetIndex(tp - 1);
                         _previousState = execState;
                         execState = ExecutionState.Moving;
                     }
@@ -488,7 +504,7 @@ namespace AgentsRebuilt
         private void MainSlider_OnValueChangedSlider_ValueChanged(object sender,
             RoutedPropertyChangedEventArgs<double> e)
         {
-            if (execState!=ExecutionState.Stopped && (int) MainSlider.Value != LogProcessor.GetIndex)
+            if (execState != ExecutionState.Stopped && (int)MainSlider.Value != _logProcessor.Index)
             {
                 double d = MainSlider.Value;
                 Task.Factory.StartNew(() =>
@@ -496,7 +512,7 @@ namespace AgentsRebuilt
                     int tp = (int) d;
                     lock (_lockerLogProcessorIndex)
                     {
-                        if (LogProcessor.GetNumber < tp || tp < 0)
+                        if (_logProcessor.GetNumber < tp || tp < 0)
                         {
                             System.Windows.MessageBox.Show("Illegal step number");
                             return;
@@ -505,14 +521,14 @@ namespace AgentsRebuilt
                         if (tp == 0)
                         {
                             isFirstLine = true;
-                            LogProcessor.SetIndex(0);
+                            _logProcessor.SetIndex(0);
                             _previousState = execState;
                             execState = ExecutionState.Moving;
                         }
                         else
                         {
                             isFirstLine = true;
-                            LogProcessor.SetIndex(tp - 1);
+                            _logProcessor.SetIndex(tp - 1);
                             _previousState = execState;
                             execState = ExecutionState.Moving;
                         }
@@ -547,7 +563,20 @@ namespace AgentsRebuilt
         {
             var item = (sender as Grid);
             Agent tp = (Agent)item.DataContext;
-            tp.IsExpanded = !tp.IsExpanded;
+            if (Keyboard.Modifiers.ToString().Contains("Control"))
+            {
+                if (_logProcessor.IsAgentLogAvailable(tp.ID))
+                {
+                    _currentAgent = tp.ID;
+                    _logProcessor.CurrentAgent = _currentAgent;
+                    _previousState = execState;
+                    execState = ExecutionState.Switching;
+                }
+            }
+            else
+            {
+                tp.IsExpanded = !tp.IsExpanded;
+            }
         }
 
 

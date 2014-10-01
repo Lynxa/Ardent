@@ -57,6 +57,8 @@ namespace AgentsRebuilt
                 brd = new SolidColorBrush(ColorAndIconAssigner.GetOrAssignColorById(id));
                 if (tIt!=null) Items.Remove(tIt);
             });
+
+            st = ElementStatus.New;
         }
 
         public int Account

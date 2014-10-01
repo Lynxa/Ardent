@@ -13,6 +13,7 @@ namespace AgentsRebuilt
         public String HappenedAt;
         public List<CfgStr> TextList;
         public List<CfgStr> TextListNames;
+        public String TimeStampH, TimeStampE;
         private int _stepNo = 0;
 
         public Clock(KVP kvp)
@@ -23,17 +24,21 @@ namespace AgentsRebuilt
                 {
                     ExpiredAt = (n.Value.Contains('.')) ?  n.Value.Substring(0, n.Value.LastIndexOf('.') + 2):n.Value ;
                     ExpiredAt = ToTime(ExpiredAt);
+                    TimeStampE = n.Value;
                 }
                 if (n.Key.Equals("happened_at"))
                 {
                     HappenedAt = (n.Value.Contains('.')) ? n.Value.Substring(0, n.Value.LastIndexOf('.') + 2): n.Value ;
                     HappenedAt = ToTime(HappenedAt);
+                    TimeStampH = n.Value;
                 }
             }
             //TextList = new List<CfgStr>() { new CfgStr("Happened at: \t" + HappenedAt), new CfgStr("Expired at: \t" + ExpiredAt), new CfgStr("Step number: \t" + "0") };
 
-            TextList = new List<CfgStr>() { new CfgStr(HappenedAt), new CfgStr(ExpiredAt), new CfgStr("0") };
-            TextListNames = new List<CfgStr>() { new CfgStr("Happened at:"), new CfgStr("Expired at:"), new CfgStr("Step number:") };
+            //TextList = new List<CfgStr>() { new CfgStr(HappenedAt), new CfgStr(ExpiredAt), new CfgStr("0") };
+            TextList = new List<CfgStr>() { new CfgStr(HappenedAt), new CfgStr(ExpiredAt) };
+            //TextListNames = new List<CfgStr>() { new CfgStr("Happened at:"), new CfgStr("Expired at:"), new CfgStr("Step number:") };
+            TextListNames = new List<CfgStr>() { new CfgStr("Happened at:"), new CfgStr("Expired at:")};
         }
 
         public int StepNo
@@ -50,7 +55,7 @@ namespace AgentsRebuilt
 
             TextList[0].Content = HappenedAt;
             TextList[1].Content = ExpiredAt;
-            TextList[2].Content = (_stepNo).ToString();
+            //TextList[2].Content = (_stepNo).ToString();
         }
 
 
