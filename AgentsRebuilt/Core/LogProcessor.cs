@@ -21,6 +21,9 @@ namespace AgentsRebuilt
         private ComplexLog _states;
         private List<String> _agts = new List<string>() {"god"};
         private List<String> _agentsWithLogAvailable = new List<string>() {"god"};
+        private Dictionary<String, int> _stateTimeStampDictionary = new Dictionary<string, int>();
+        private Dictionary<String, Duo> _agentSteps = new Dictionary<string, Duo>();
+        
 
         private String _currentAgent ;
 
@@ -81,8 +84,10 @@ namespace AgentsRebuilt
             _dataDictionary = _agentData;
             _mainDispatcher = _dispatcher;
             _states = new ComplexLog();
-            _currentAgent = curAgent;
+            _stateTimeStampDictionary = new Dictionary<string, int>();
 
+            _currentAgent = curAgent;
+            int tCounter = 0;
             var _log = System.IO.File.ReadAllLines(filename).ToList<String>();
             _log = RemoveEmpty(_log);
 
@@ -96,6 +101,7 @@ namespace AgentsRebuilt
                     try
                     {
                         tst = StateObjectMapper.MapState(tResKvp, _dataDictionary, _mainDispatcher);
+                        
                     }
                     catch(Exception)
                     {
@@ -103,47 +109,70 @@ namespace AgentsRebuilt
                     }
                     if (tst != null)
                     {
+                        tst.Clock.StepNo = tCounter;
+                        _stateTimeStampDictionary.Add(tst.Clock.HappenedAt, tCounter);
+                        
                         _states.Add(tst, "god");
+                        
                         foreach (var ag in tst.Agents)
                         {
                             if (!_agts.Contains(ag.ID))
                             {
                                 _agts.Add(ag.ID);
-                                String agFile = filename.Remove(filename.LastIndexOf("."), 3);
-                                agFile += "_" + ag.ID + ".db";
-                                if (File.Exists(agFile))
-                                {
-                                    List<String> agLog = File.ReadAllLines(agFile).ToList<String>();
-                                    agLog = RemoveEmpty(agLog);
-                                    _agentsWithLogAvailable.Add(ag.ID);
-                                    foreach (var l2 in agLog)
-                                    {
-                                        KVP tKvp = null;
-                                        tKvp = DecipherLine(l2);
-                                        if (tKvp != null)
-                                        {
-                                            AgentState tst2 = null;
-                                            try
-                                            {
-                                                tst2 = StateObjectMapper.MapState(tKvp, _dataDictionary, _mainDispatcher);
-                                            }
-                                            catch (Exception)
-                                            {
-                                            }
-                                            if (tst2 != null)
-                                            {
-                                                _states.Add(tst2, ag.ID);
-                                            }
-                                        }
-                                    }
-
-                                }
                             }
-                            
+                            if (!_agentSteps.ContainsKey(ag.ID))
+                            {
+                                _agentSteps.Add(ag.ID, new Duo(tCounter, 0));
+                            }
+                            else
+                            {
+                                Duo tb;
+                                _agentSteps.TryGetValue(ag.ID, out tb);
+                                tb.EndStep = tCounter;
+                            }
                         }
+
+                        tCounter++;
+
                     }
 
                 }
+            }
+
+            foreach (var ag in _agts)
+            {
+                String agFile = filename.Remove(filename.LastIndexOf("."), 3);
+                agFile += "_" + ag + ".db";
+                if (File.Exists(agFile))
+                {
+                    List<String> agLog = File.ReadAllLines(agFile).ToList<String>();
+                    agLog = RemoveEmpty(agLog);
+                    _agentsWithLogAvailable.Add(ag);
+                    foreach (var l2 in agLog)
+                    {
+                        KVP tKvp = null;
+                        tKvp = DecipherLine(l2);
+                        if (tKvp != null)
+                        {
+                            AgentState tst2 = null;
+                            try
+                            {
+                                tst2 = StateObjectMapper.MapState(tKvp, _dataDictionary, _mainDispatcher);
+                            }
+                            catch (Exception)
+                            {
+                            }
+                            if (tst2 != null)
+                            {
+                                int tStep;
+                                _stateTimeStampDictionary.TryGetValue(tst2.Clock.HappenedAt, out tStep);
+                                tst2.Clock.StepNo = tStep;
+                                _states.Add(tst2, ag);
+                            }
+                        }
+                    }
+
+                }   
             }
 
             _latency = GetNumber;
@@ -157,7 +186,7 @@ namespace AgentsRebuilt
         public bool GetNextLine(out AgentState result, ExecutionState execState)
         {
             AgentState sTate = null;
-            if (execState == ExecutionState.Running || execState == ExecutionState.Moving)
+            if (execState == ExecutionState.Running )
             {
                 if (_states.Count > Index)
                 {
@@ -166,9 +195,29 @@ namespace AgentsRebuilt
                     _latency--;
                 }
             }
+            else if (execState == ExecutionState.Moving)
+            {
+                if (Index==0 && _states.Count > 0)
+                {
+                    sTate = _states[_currentAgent, Index];
+                    Index++;
+                    _latency--;
+                }
+                else if (_states.Count > Index && Index>0)
+                {
+                    sTate = new AgentState();
+                    var sTate1 = _states[_currentAgent, Index-1];
+                    var state2 = _states[_currentAgent, Index];
+                    StateObjectMapper.UpdateState(sTate1, sTate, _dataDictionary, _mainDispatcher);
+                    //StateObjectMapper.UpdateState(state2, sTate, _dataDictionary, _mainDispatcher);
+                    Index++;
+                    _latency--;
+                }
+
+            }
             else if (execState == ExecutionState.Following)
             {
-                if (_states.Count > Index  && _latency <= (_states.Count - Index))
+                if (_states.Count > Index && _latency <= (_states.Count - Index))
                 {
                     sTate = _states[_currentAgent, Index];
                     Index++;
@@ -185,7 +234,19 @@ namespace AgentsRebuilt
             {
                 sTate = _states[_currentAgent, Index-1];
             }
-            
+
+            result = sTate;
+            return (sTate != null);
+        }
+
+        public bool GetFirstLine(out AgentState result, ExecutionState execState)
+        {
+            AgentState sTate = null;
+            if (_states.Count > 0)
+            {
+                sTate = _states[_currentAgent, 0]; //TODO REFACTORING FOR AGENT VIEW
+            }
+            Index = 0;
             result = sTate;
             return (sTate != null);
         }
@@ -197,6 +258,7 @@ namespace AgentsRebuilt
             result = sTate;
             return (sTate != null);
         }
+
 
         public static KVP DecipherLine(String msg)
         {
@@ -303,6 +365,30 @@ namespace AgentsRebuilt
             return null;
         }
 
+        public int GetAgentStartStep(String id)
+        {
+            Duo tb;
+            if (_agentSteps.TryGetValue(id, out tb))
+            {
+                return tb.StartStep;
+            }
+            return 0;
+        }
+
+        public int GetAgentEndStep(String id)
+        {
+            Duo tb;
+            if (_agentSteps.TryGetValue(id, out tb))
+            {
+                return tb.EndStep;
+            }
+            return 0;
+        }
+
+        public static void CleanupState()
+        {
+        }
+
         public static List<KVP> GetItemData(String filename)
         {
             List<String> tsList;
@@ -340,57 +426,21 @@ namespace AgentsRebuilt
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
             }
         }
-    }
 
-    internal class ComplexLog
+
+    private class Duo
     {
-        private List<Dictionary<String, AgentState>> _dict = new List<Dictionary<string, AgentState>>();
-        public AgentState this[String agent, int i]
-        {
-            get
-            {
-                AgentState hState;
-                if (_dict[i].TryGetValue(agent, out hState)) return hState;
-                return null;
-            }
-        }
+        public int StartStep;
+        public int EndStep;
 
-        private Dictionary<String, AgentState> GetDictByTimeStamp(AgentState ag)
+        public Duo(int alpha, int beta)
         {
-            String hAt = ag.Clock.TimeStampH;
-            foreach (var dict in _dict)
-            {
-                foreach (var agentState in dict.Values)
-                {
-                    if (agentState.Clock.TimeStampH.Equals(hAt))
-                    {
-                        return dict;
-                    }
-                }
-            }
-            return null;
+            StartStep = alpha;
+            EndStep = beta;
         }
-
-        internal void Add(AgentState state, String ag)
-        {
-            var dc = GetDictByTimeStamp(state);
-            if (dc != null && !dc.ContainsKey(ag))
-            {
-                dc.Add(ag, state);
-            }
-            else
-            {
-                var ddc = new Dictionary<String, AgentState>();
-                ddc.Add(ag, state);
-                _dict.Add(ddc);
-            }
-
-        }
-
-        public int Count 
-        {
-            get { return _dict.Count; } 
-        }
+    }    
+    
     }
+
 }
 

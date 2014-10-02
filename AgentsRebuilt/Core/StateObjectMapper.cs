@@ -97,11 +97,18 @@ namespace AgentsRebuilt
             return state;
         }
 
+        
         public static void UpdateState (AgentState newState, AgentState oldState,AgentDataDictionary _agentDataDictionary, Dispatcher uiThread)
         {
+            if (oldState.Clock == null)
+            {
+                oldState.Clock = new Clock();
+            }
+
             oldState.Clock.HappenedAt = newState.Clock.HappenedAt;
             oldState.Clock.ExpiredAt = newState.Clock.ExpiredAt;
             oldState.Clock.SetTextList();
+            
             oldState.Event = newState.Event;
             UpdateAuctions(oldState.Auctions, newState.Auctions, uiThread);
             UpdateCommons(oldState.CommonRights, newState.CommonRights, uiThread);
@@ -220,7 +227,11 @@ namespace AgentsRebuilt
                 if (!ContainsAgent(oldAgents, agent.ID))
                 {
                     Agent agent1 = agent;
-                    uiThread.Invoke(() => oldAgents.Add(agent1));
+                    uiThread.Invoke(() =>
+                    {
+                        oldAgents.Add(agent1);
+                        agent1.Status = ElementStatus.New;
+                    });
                 }
             }
         }

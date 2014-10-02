@@ -67,6 +67,7 @@
     <Compile Include="CfgWindow.xaml.cs">
       <DependentUpon>CfgWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Core\ComplexLog.cs" />
     <Compile Include="TeStPanel.cs" />
     <Compile Include="VisualElements\SystemEvent.cs" />
     <Compile Include="ItemWindow.xaml.cs">

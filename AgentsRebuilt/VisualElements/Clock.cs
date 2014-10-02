@@ -16,6 +16,13 @@ namespace AgentsRebuilt
         public String TimeStampH, TimeStampE;
         private int _stepNo = 0;
 
+        public Clock()
+        {
+            TextList = new List<CfgStr>() { new CfgStr("0"), new CfgStr("0") };
+            TextListNames = new List<CfgStr>() { new CfgStr("Happened at:"), new CfgStr("Expired at:") };
+
+        }
+
         public Clock(KVP kvp)
         {
             foreach (var n in kvp.ListOfItems)

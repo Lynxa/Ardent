@@ -27,7 +27,7 @@ namespace AgentsRebuilt
 
         public AgentDataDictionary(CfgSettings cfg)
         {
-            String tpath = Path.Combine(cfg.DammagePath, @"domains\english.pl");
+            String tpath = Path.Combine(cfg.DammagePath, @"domains\visual.pl");
             _agentDataList = LogProcessor.GetAgentData(tpath);
             _itemDataList = LogProcessor.GetItemData(tpath);
             conf = cfg;

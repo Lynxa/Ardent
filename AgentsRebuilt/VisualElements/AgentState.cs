@@ -16,5 +16,21 @@ namespace AgentsRebuilt
         public ObservableCollection<Item> Auctions = new ObservableCollection<Item>();
         public ObservableCollection<Item> CommonRights = new ObservableCollection<Item>();
 
+
+        //public AgentState ShallowCopy()
+        //{
+        //    var res = (AgentState) this.MemberwiseClone();
+        //    res.Clock = Clock.ShallowCopy();
+        //    res.Agents = new ObservableCollection<Agent>();
+        //    Agent[] tAgents= new Agent[Agents.Count];
+        //    Agents.CopyTo(tAgents, 0);
+        //    foreach (var tAgent in tAgents)
+        //    {
+        //        res.Agents.Add(tAgent);
+        //    }
+        //    return res;
+        //}
     }
+
+    
 }

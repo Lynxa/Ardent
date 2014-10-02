@@ -37,6 +37,7 @@ namespace AgentsRebuilt
 
         private ExecutionState execState = ExecutionState.Void;
         private ExecutionState _previousState = ExecutionState.Void;
+        private int _move_to = 0;
         private Boolean isFirstLine = true;
         private bool stopwork;
         private AgentState ast = null;
@@ -118,7 +119,13 @@ namespace AgentsRebuilt
                                 {
                                     Boolean isLine;
 
-                                    if (execState != ExecutionState.Switching)
+                                    if (execState == ExecutionState.Moving)
+                                    {
+                                        _logProcessor.SetIndex(_move_to);
+                                    }
+                                    
+                                    //else
+                                        if (execState != ExecutionState.Switching)
                                     {
                                         isLine = _logProcessor.GetNextLine(out newState, execState);
                                     }
@@ -131,16 +138,19 @@ namespace AgentsRebuilt
                                     {
                                         if (isFirstLine || ast == null || execState == ExecutionState.Moving || execState==ExecutionState.Switching)
                                         {
-                                            if (execState == ExecutionState.Moving)
-                                            {
-                                                AgentState secondState;
-                                                if (_logProcessor.GetNextLine(out secondState, ExecutionState.Running))
-                                                {
-                                                    StateObjectMapper.UpdateState(secondState, newState, _agentDataDictionary, dsc);
-                                                }
-                                            }
-                                            ast = 
-                                                newState;
+                                            //if (execState == ExecutionState.Moving)
+                                            //{
+                                            //    AgentState secondState;
+                                            //    if (_move_to!=0 && _logProcessor.GetNextLine(out secondState, ExecutionState.Running))
+                                            //    {
+                                            //        StateObjectMapper.UpdateState(secondState, newState, _agentDataDictionary, dsc);
+                                            //    }
+                                            //}
+                                            
+                                            ast = new AgentState();
+                                            StateObjectMapper.UpdateState(newState, ast, _agentDataDictionary, dsc);
+
+
                                             dsc.Invoke(() =>
                                             {
                                                 visualAgents = ast.Agents;
@@ -152,11 +162,20 @@ namespace AgentsRebuilt
                                                 AuctionsList.DataContext = visualAuctions;
                                                 CommonsList.DataContext = visualCommons;
 
-                                                ast.Clock.StepNo = _logProcessor.Index;
+                                                //ast.Clock.StepNo = _logProcessor.Index;
                                                 ClockList.DataContext = ast.Clock.TextList;
                                                 ClockListNames.DataContext = ast.Clock.TextListNames;
                                                 MainSlider.Maximum = _logProcessor.GetNumber;
                                                 MainSlider.Value = _logProcessor.Index;
+                                                if (_currentAgent != "god")
+                                                {
+                                                    MainSlider.IsSelectionRangeEnabled = true;
+                                                }
+                                                else
+                                                {
+                                                    MainSlider.IsSelectionRangeEnabled = false;
+                                                }
+
                                                 TradeChannel.DataContext = tradeLog;
                                                 if (ast.Event != null && ast.Event.Message != "")
                                                     tradeLog.Add(ast.Event.Message);
@@ -176,16 +195,26 @@ namespace AgentsRebuilt
                                         */
                                             });
                                             isFirstLine = false;
-                                            if (execState == ExecutionState.Moving || execState == ExecutionState.Switching) execState = _previousState;
+                                            if (execState == ExecutionState.Moving || execState == ExecutionState.Switching) 
+                                                execState = _previousState;
                                         }
                                         else
                                         {
                                             StateObjectMapper.UpdateState(newState, ast, _agentDataDictionary, dsc);
                                             dsc.Invoke(() =>
                                             {
-                                                ast.Clock.StepNo = _logProcessor.Index;
+                                                //ast.Clock.StepNo = _logProcessor.Index;
                                                 MainSlider.Value = _logProcessor.Index;
                                                 MainSlider.Maximum = _logProcessor.GetNumber;
+                                                if (_currentAgent != "god")
+                                                {
+                                                    MainSlider.IsSelectionRangeEnabled = true;
+                                                }
+                                                else
+                                                {
+                                                    MainSlider.IsSelectionRangeEnabled = false;
+                                                }
+
                                                 if (tradeLog == null) tradeLog = new ObservableCollection<string>();
                                                 if (ast.Event != null && ast.Event.Message != "")
                                                     tradeLog.Add(ast.Event.Message);
@@ -441,9 +470,20 @@ namespace AgentsRebuilt
 
         private void Restart(object sender, RoutedEventArgs e)
         {
-            isFirstLine = true;
-            _logProcessor.SetIndex(0);
-            MainSlider.Value = 0;
+            Task.Factory.StartNew(() =>
+            {
+                lock (_lockerLogProcessorIndex)
+                {
+                    //ast = null;
+                    isFirstLine = true;
+                    _move_to = 0;
+                    //_logProcessor.SetIndex(tp);
+                    _logProcessor.CurrentAgent = "god";
+                    _previousState = execState;
+                    execState = ExecutionState.Moving;
+                }
+
+            });
             _stopSleeping = true;
         }
 
@@ -456,26 +496,18 @@ namespace AgentsRebuilt
                 lock (_lockerLogProcessorIndex)
                 {
                     bool t = Int32.TryParse(text, out tp);
-                    if (!t || _logProcessor.GetNumber < tp || tp < 0)
+                    if (!t || _logProcessor.GetNumber < tp - 1 || tp < 0)
                     {
                         System.Windows.MessageBox.Show("Illegal step number");
                         return;
                     }
                     //ast = null;
-                    if (tp == 0)
-                    {
-                        isFirstLine = true;
-                        _logProcessor.SetIndex(0);
-                        _previousState = execState;
-                        execState = ExecutionState.Moving;
-                    }
-                    else
-                    {
-                        isFirstLine = true;
-                        _logProcessor.SetIndex(tp - 1);
-                        _previousState = execState;
-                        execState = ExecutionState.Moving;
-                    }
+                    isFirstLine = true;
+                    _move_to = tp;
+                    //_logProcessor.SetIndex(tp);
+                    _logProcessor.CurrentAgent = "god";
+                    _previousState = execState;
+                    execState = ExecutionState.Moving;
                 }
                
             });
