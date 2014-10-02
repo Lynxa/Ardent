@@ -197,13 +197,14 @@ namespace AgentsRebuilt
             }
             else if (execState == ExecutionState.Moving)
             {
-                if (Index==0 && _states.Count > 0)
+                int start = GetAgentStartStep(_currentAgent);
+                if (Index==start && _states.Count > start)
                 {
                     sTate = _states[_currentAgent, Index];
                     Index++;
                     _latency--;
                 }
-                else if (_states.Count > Index && Index>0)
+                else if (_states.Count > Index && Index > start)
                 {
                     sTate = new AgentState();
                     var sTate1 = _states[_currentAgent, Index-1];

@@ -165,11 +165,15 @@ namespace AgentsRebuilt
                                                 //ast.Clock.StepNo = _logProcessor.Index;
                                                 ClockList.DataContext = ast.Clock.TextList;
                                                 ClockListNames.DataContext = ast.Clock.TextListNames;
-                                                MainSlider.Maximum = _logProcessor.GetNumber;
-                                                MainSlider.Value = _logProcessor.Index;
+                                                MainSlider.Maximum = _logProcessor.GetNumber-1;
+                                                MainSlider.Value = _logProcessor.Index-1;
                                                 if (_currentAgent != "god")
                                                 {
                                                     MainSlider.IsSelectionRangeEnabled = true;
+                                                    MainSlider.SelectionStart =
+                                                        _logProcessor.GetAgentStartStep(_currentAgent);
+                                                    MainSlider.SelectionEnd =
+                                                        _logProcessor.GetAgentEndStep(_currentAgent);
                                                 }
                                                 else
                                                 {
@@ -204,17 +208,8 @@ namespace AgentsRebuilt
                                             dsc.Invoke(() =>
                                             {
                                                 //ast.Clock.StepNo = _logProcessor.Index;
-                                                MainSlider.Value = _logProcessor.Index;
-                                                MainSlider.Maximum = _logProcessor.GetNumber;
-                                                if (_currentAgent != "god")
-                                                {
-                                                    MainSlider.IsSelectionRangeEnabled = true;
-                                                }
-                                                else
-                                                {
-                                                    MainSlider.IsSelectionRangeEnabled = false;
-                                                }
-
+                                                MainSlider.Value = _logProcessor.Index-1;
+                                                MainSlider.Maximum = _logProcessor.GetNumber-1;
                                                 if (tradeLog == null) tradeLog = new ObservableCollection<string>();
                                                 if (ast.Event != null && ast.Event.Message != "")
                                                     tradeLog.Add(ast.Event.Message);
@@ -476,9 +471,9 @@ namespace AgentsRebuilt
                 {
                     //ast = null;
                     isFirstLine = true;
-                    _move_to = 0;
+                    _move_to = _logProcessor.GetAgentStartStep(_currentAgent);
                     //_logProcessor.SetIndex(tp);
-                    _logProcessor.CurrentAgent = "god";
+                    //_logProcessor.CurrentAgent = "god";
                     _previousState = execState;
                     execState = ExecutionState.Moving;
                 }
@@ -496,7 +491,10 @@ namespace AgentsRebuilt
                 lock (_lockerLogProcessorIndex)
                 {
                     bool t = Int32.TryParse(text, out tp);
-                    if (!t || _logProcessor.GetNumber < tp - 1 || tp < 0)
+                    int start = _logProcessor.GetAgentStartStep(_currentAgent);
+                    int stop = _logProcessor.GetAgentEndStep(_currentAgent);
+
+                    if (!t || stop < tp || tp < start)
                     {
                         System.Windows.MessageBox.Show("Illegal step number");
                         return;
@@ -505,7 +503,7 @@ namespace AgentsRebuilt
                     isFirstLine = true;
                     _move_to = tp;
                     //_logProcessor.SetIndex(tp);
-                    _logProcessor.CurrentAgent = "god";
+                    //_logProcessor.CurrentAgent = "god";
                     _previousState = execState;
                     execState = ExecutionState.Moving;
                 }
@@ -536,37 +534,7 @@ namespace AgentsRebuilt
         private void MainSlider_OnValueChangedSlider_ValueChanged(object sender,
             RoutedPropertyChangedEventArgs<double> e)
         {
-            if (execState != ExecutionState.Stopped && (int)MainSlider.Value != _logProcessor.Index)
-            {
-                double d = MainSlider.Value;
-                Task.Factory.StartNew(() =>
-                {
-                    int tp = (int) d;
-                    lock (_lockerLogProcessorIndex)
-                    {
-                        if (_logProcessor.GetNumber < tp || tp < 0)
-                        {
-                            System.Windows.MessageBox.Show("Illegal step number");
-                            return;
-                        }
-                        //ast = null;
-                        if (tp == 0)
-                        {
-                            isFirstLine = true;
-                            _logProcessor.SetIndex(0);
-                            _previousState = execState;
-                            execState = ExecutionState.Moving;
-                        }
-                        else
-                        {
-                            isFirstLine = true;
-                            _logProcessor.SetIndex(tp - 1);
-                            _previousState = execState;
-                            execState = ExecutionState.Moving;
-                        }
-                    }
-                });
-            }
+
         }
 
         private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -627,6 +595,43 @@ namespace AgentsRebuilt
             Item tp = (Item)item.DataContext;
             Window frm3 = new ItemWindow(tp);
             frm3.Show();
+        }
+
+        private void MainSlider_DragLeave(object sender, System.Windows.DragEventArgs e)
+        {
+            if (execState != ExecutionState.Stopped && (int)MainSlider.Value != _logProcessor.Index - 1)
+            {
+                double d = MainSlider.Value;
+                int tp = (int)d;
+                if (tp < _logProcessor.GetAgentStartStep(_currentAgent))
+                {
+                    tp = _logProcessor.GetAgentStartStep(_currentAgent);
+                    //MainSlider.Value = tp;
+                }
+                else if (tp > _logProcessor.GetAgentEndStep(_currentAgent))
+                {
+                    tp = _logProcessor.GetAgentEndStep(_currentAgent);
+                    //MainSlider.Value = tp;
+                }
+
+                Task.Factory.StartNew(() =>
+                {
+
+                    lock (_lockerLogProcessorIndex)
+                    {
+                        if (_logProcessor.GetNumber < tp || tp < 0)
+                        {
+                            System.Windows.MessageBox.Show("Illegal step number");
+                            return;
+                        }
+                        //ast = null;
+                        isFirstLine = true;
+                        _move_to = tp - 1;
+                        _previousState = execState;
+                        execState = ExecutionState.Moving;
+                    }
+                });
+            }
         }
     }
 }

@@ -405,7 +405,7 @@
                         Margin="18,10,0,0"
                         ValueChanged="MainSlider_OnValueChangedSlider_ValueChanged"
                         TickPlacement="BottomRight"
-                        IsSnapToTickEnabled="True"
+                        IsSnapToTickEnabled="True" DragLeave="MainSlider_DragLeave"
         />
 
         <ListBox x:Name="ClockList" Width="80" Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Right"
