@@ -70,11 +70,24 @@ namespace AgentsRebuilt
             String rawpath;
             rawpath = ReadPathFromFile("path_to_config.txt");
             bool _readCfg = false;
+            while (!_readCfg)
+            {
+                Config = CfgSettings.LoadFromFile(rawpath, out _readCfg);
+                if (!_readCfg)
+                {
+                    System.Windows.MessageBox.Show("Invalid configuration file. Please, select the correct one.");
+                    Microsoft.Win32.OpenFileDialog openFileDialog1 = new Microsoft.Win32.OpenFileDialog();
+                    bool? userClickedOK = openFileDialog1.ShowDialog();
 
-            Config = CfgSettings.LoadFromFile(rawpath, out _readCfg);
-
-            if (!_readCfg) System.Windows.MessageBox.Show("Invalid configuration file");
-            else
+                    if (userClickedOK == true)
+                    {
+                        rawpath= openFileDialog1.FileName;
+                    }
+                }
+            }
+            CfgSettings.WritePathToFile("path_to_config.txt", rawpath);
+            //if (!_readCfg) System.Windows.MessageBox.Show("Invalid configuration file");
+            //else
             {
                 ConfigList.DataContext = Config.TextList;
                 _agentDataDictionary = new AgentDataDictionary(Config);
@@ -138,17 +151,20 @@ namespace AgentsRebuilt
                                     {
                                         if (isFirstLine || ast == null || execState == ExecutionState.Moving || execState==ExecutionState.Switching)
                                         {
-                                            //if (execState == ExecutionState.Moving)
-                                            //{
-                                            //    AgentState secondState;
-                                            //    if (_move_to!=0 && _logProcessor.GetNextLine(out secondState, ExecutionState.Running))
-                                            //    {
-                                            //        StateObjectMapper.UpdateState(secondState, newState, _agentDataDictionary, dsc);
-                                            //    }
-                                            //}
-                                            
-                                            ast = new AgentState();
-                                            StateObjectMapper.UpdateState(newState, ast, _agentDataDictionary, dsc);
+                                            if (execState == ExecutionState.Moving && _move_to != _logProcessor.GetAgentStartStep(_currentAgent))
+                                            {
+                                                //AgentState secondState;
+                                                //if (_move_to != 0 && _logProcessor.GetNextLine(out secondState, ExecutionState.Running))
+                                                //{
+                                                //    StateObjectMapper.UpdateState(secondState, newState, _agentDataDictionary, dsc);
+                                                //}
+                                                ast = newState;
+                                            }
+                                            else
+                                            {
+                                                ast = new AgentState();
+                                                StateObjectMapper.UpdateState(newState, ast, _agentDataDictionary, dsc);   
+                                            }
 
 
                                             dsc.Invoke(() =>

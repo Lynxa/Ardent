@@ -88,7 +88,7 @@ namespace AgentsRebuilt
             TextList[1].Content = "Dammage folder: " + DammagePath;
         }
 
-        private static void WritePathToFile(string filename, String text)
+        public static void WritePathToFile(string filename, String text)
         {
             var f = File.CreateText(filename);
             f.WriteLine(text);

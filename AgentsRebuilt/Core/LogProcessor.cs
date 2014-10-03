@@ -210,7 +210,7 @@ namespace AgentsRebuilt
                     var sTate1 = _states[_currentAgent, Index-1];
                     var state2 = _states[_currentAgent, Index];
                     StateObjectMapper.UpdateState(sTate1, sTate, _dataDictionary, _mainDispatcher);
-                    //StateObjectMapper.UpdateState(state2, sTate, _dataDictionary, _mainDispatcher);
+                    StateObjectMapper.UpdateState(state2, sTate, _dataDictionary, _mainDispatcher);
                     Index++;
                     _latency--;
                 }
