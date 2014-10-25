@@ -1,11 +1,15 @@
 ﻿<Window x:Class="AgentsRebuilt.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MultiAgentz Visualisation" Height="902.537" Width="1400.254"
+        Title="MultiAgentz Visualisation" Height="909.537" Width="1400.254"
         xmlns:mylocalXAMLnamespace="clr-namespace:AgentsRebuilt"
         xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase">
+        
     <Window.Resources>
+        <mylocalXAMLnamespace:LineNumberToCoordinateConverter x:Key="Converter"/>
         <mylocalXAMLnamespace:ItemTemplateSelector x:Key="ItemTemplateSelector1" />
+        
+        
         <DataTemplate x:Key="CfgItemTemplate">
             <TextBlock 
                         Text="{Binding Path=Content, UpdateSourceTrigger=PropertyChanged}"
@@ -47,7 +51,7 @@
 
             <DataTemplate x:Key="KVPItemTemplate">
 
-                <Grid Width="150" Height="40" >
+                <Grid Width="150" Height="40" MouseLeftButtonDown="KVPItem_Clicked">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="40"></ColumnDefinition>
                         <ColumnDefinition Width="90"></ColumnDefinition>
@@ -68,11 +72,14 @@
                     <TextBlock 
                         Text="{Binding Path=Title}"
                         VerticalAlignment="Center"
+                        Foreground="Black"
                         Grid.Column="1"
                         Grid.Row="0"/>
                     <TextBlock 
                         VerticalAlignment="Center"
+                        Foreground="Black"
                         HorizontalAlignment="Right"
+                        Background="Transparent"
                         Margin="0,0,3,0"
                         Grid.Column="2"
                         Grid.Row="0"
@@ -80,8 +87,6 @@
                         />
                 </Grid>
             </DataTemplate>
-
-
 
             <DataTemplate x:Key="ClockItemTemplate">
                 <Grid>
@@ -155,8 +160,77 @@
                 </Button>
             </DataTemplate>
 
-            <ControlTemplate x:Key="AgentTemplateCollapsed">
+            <ControlTemplate  x:Key="AgentPaneTemplateCollapsed">
+                <Button Width="165" Margin="0,0,0,2" Style="{StaticResource TransparentButton}" MouseDoubleClick="CommonRightsItem_Clicked">
+                    <Grid Width="165" Margin="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="165"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="52"></RowDefinition>
+                            <RowDefinition Height="*"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <Border Grid.RowSpan="2" BorderThickness="2" BorderBrush="{Binding Path=BorderBrush}" Background="{Binding Path=Background, UpdateSourceTrigger=PropertyChanged}" />
+                        <WrapPanel Grid.Row="0">
+                            <Image 
+                            Source="{Binding Path=Source}"
+                            Height="48"
+                            Margin="2,2,0,2"
+                            />
+                            <TextBlock
+                            Margin="10,5,0,0"
+                            Text="{Binding Path=Title}"   
+                        />
+                        </WrapPanel>
 
+                    </Grid>
+                </Button>
+            </ControlTemplate>
+
+            <ControlTemplate  x:Key="AgentPaneTemplateExpanded">
+                <Button Width="165" Margin="0,0,0,2" Style="{StaticResource TransparentButton}" MouseDoubleClick="CommonRightsItem_Clicked">
+                    <Grid Width="165" Margin="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="165"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="52"></RowDefinition>
+                            <RowDefinition Height="*"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <Border Grid.RowSpan="2" BorderThickness="2" BorderBrush="{Binding Path=BorderBrush}" Background="{Binding Path=Background, UpdateSourceTrigger=PropertyChanged}" />
+                        <WrapPanel Grid.Row="0">
+                            <Image 
+                            Source="{Binding Path=Source}"
+                            Height="48"
+                            Margin="2,2,0,2"
+                            />
+                            <TextBlock
+                            Margin="10,5,0,0"
+                            Text="{Binding Path=Title}"   
+                        />
+                        </WrapPanel>
+                        <StackPanel Orientation="Vertical" Grid.Row="1">
+                            <TextBlock Text="{Binding Path=Account, UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+                    </Grid>
+                </Button>
+            </ControlTemplate>
+            
+            <DataTemplate x:Key="AgentPaneTemplate">
+                <Control x:Name="theControl1" 
+                         Template="{StaticResource AgentPaneTemplateCollapsed}"
+                         >
+                </Control>
+                <DataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding Path=IsPaneExpanded, UpdateSourceTrigger=PropertyChanged}" Value="True">
+                        <Setter TargetName="theControl1" Property="Template"
+                            Value="{StaticResource AgentPaneTemplateExpanded}" />
+                    </DataTrigger>
+                </DataTemplate.Triggers>
+            </DataTemplate>
+           
+            
+            <ControlTemplate x:Key="AgentTemplateCollapsed">
                 <Grid Width="165" Margin="20" MouseLeftButtonDown="UIElement_OnMouseLeftButtonDown">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="165"></ColumnDefinition>
@@ -181,7 +255,6 @@
                                 Margin="10,5,0,0"
                                 Text="{Binding Path=Account, UpdateSourceTrigger=PropertyChanged, StringFormat=Account: {0:#}}"   
                             />
-
                         </StackPanel>
                     </WrapPanel>
 
@@ -222,7 +295,7 @@
                                 Margin="10,5,0,0"
                                 Text="{Binding Path=Title}"   
                             />
-                            <TextBlock Opacity="0"
+                            <TextBlock
                                 Margin="10,5,0,0"
                                 Text="{Binding Path=Account, UpdateSourceTrigger=PropertyChanged, StringFormat=Account: {0:#}}"   
                             />
@@ -257,11 +330,21 @@
                             </GroupStyle>
 
                         </ListBox.GroupStyle>
-                        <ListBox.ItemContainerStyle>
+                        <!--ListBox.ItemContainerStyle>
                             <Style TargetType="ListBoxItem">
                                 <EventSetter Event="MouseDoubleClick" Handler="KVPItem_Clicked"/>
-                            </Style>
-                        </ListBox.ItemContainerStyle>
+                                
+                            </-->
+                            <!--Style TargetType="{x:Type ListBoxItem}" >
+                                <Setter Property="ContentTemplate" Value="{StaticResource KVPItemTemplate}" />
+                                <Style.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="ContentTemplate" Value="{StaticResource KVPSelectedTemplate}" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </>
+
+                        </ItemContainerStyle-->
                     </ListBox>
                 </Grid>
             </ControlTemplate>
@@ -350,38 +433,70 @@
 
         <Grid  Grid.Column="1" Grid.Row="0" >
             <Grid.RowDefinitions>
-                <RowDefinition Height="20" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="20" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Name="AuctionsLabel" Text="{Binding UpdateSourceTrigger=PropertyChanged}" Grid.Column="0" Grid.Row="0" VerticalAlignment="Bottom"/>
+            <StackPanel Grid.Column="0" Grid.Row="0" Orientation="Vertical" Width="175">
 
-            <ItemsControl Name="AuctionsList" ItemTemplate="{StaticResource AuctionTemplate}" Grid.Column="0" Grid.Row="1" 
+            
+                <Expander Name="AgentPaneLabel" Header="Agents" VerticalAlignment="Bottom">
+
+                <ItemsControl Name="AgentsPane" ItemTemplate="{StaticResource AgentPaneTemplate}" 
                  ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged}" Margin="0, 5, 5, 0">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel IsItemsHost="True" Orientation="Vertical">
-                        </StackPanel>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-            </ItemsControl>
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel IsItemsHost="True" Orientation="Vertical">
+                            </StackPanel>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+                </Expander>
+                <Expander Header="Items" VerticalAlignment="Bottom">
 
-            <TextBlock Name="CommonsLabel" Text="{Binding UpdateSourceTrigger=PropertyChanged}" Grid.Column="0" Grid.Row="2" VerticalAlignment="Bottom"/>
-
-            <ItemsControl Name="CommonsList" ItemTemplate="{StaticResource CommonRightsTemplate}" Grid.Column="0" Grid.Row="3" 
+                <ItemsControl Name="ItemsPane" ItemTemplate="{StaticResource CommonRightsTemplate}"
                  ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged}" Margin="0, 5, 5, 0">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Name="TeStackPanel" IsItemsHost="True" Orientation="Vertical" Margin="0, 2, 0, 0">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel  IsItemsHost="True" Orientation="Vertical" Margin="0, 2, 0, 0">
 
-                        </StackPanel>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-            </ItemsControl>
+                                </StackPanel>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </Expander>
+
+
+                <Expander Name="AuctionsLabel" Header="{Binding UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Bottom">
+
+                <ItemsControl Name="AuctionsList" ItemTemplate="{StaticResource AuctionTemplate}" 
+                 ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged}" Margin="0, 5, 5, 0">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel IsItemsHost="True" Orientation="Vertical">
+                                </StackPanel>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </Expander>
+                
+                <Expander Name="CommonsLabel" Header="Common rights" VerticalAlignment="Bottom">
+                
+                <ItemsControl Name="CommonsList" ItemTemplate="{StaticResource CommonRightsTemplate}"
+                 ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged}" Margin="0, 5, 5, 0">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Name="TeStackPanel" IsItemsHost="True" Orientation="Vertical" Margin="0, 2, 0, 0">
+
+                            </StackPanel>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+               </Expander>
+                
+            </StackPanel>
+            
 
         </Grid>
         <ListBox Grid.Row="0" Grid.Column="0" Name="ConfigList" ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged}"
@@ -392,7 +507,6 @@
         </ListBox>
 
         <ListBox Name="TradeChannel" BorderBrush="White" Grid.Row="1" Grid.Column="0" Height="80" ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged}" Margin="18,0,639,10" VerticalAlignment="Bottom" />
-
 
         <Slider Name="MainSlider" 
                         HorizontalAlignment="Left" 
@@ -416,14 +530,14 @@
                          ItemTemplate="{StaticResource CfgItemTemplate3}" Margin="0,0,90,70" BorderThickness="1,1,0,1"/>
         <!--{StaticResource CfgItemTemplate2}" -->
 
-        <Button Name="RestartButton" ToolTip="Reset the application, running it with the previously chosen mode from the beginning" HorizontalAlignment="Left" Height="35" Margin="163,77,0,0" Grid.Row="2" VerticalAlignment="Top" Click="Restart" Width="67" IsEnabled="False">Res_tart
+        <Button Name="RestartButton" ToolTip="Reset the application, running it with the previously chosen mode from the beginning" HorizontalAlignment="Left" Height="35" Margin="163,69,0,0" Grid.Row="2" VerticalAlignment="Top" Click="Restart" Width="67" IsEnabled="False">Res_tart
         </Button>
-        <Button Name="RunButton" ToolTip="Go over log records at the indicated speed" HorizontalAlignment="Left" Height="35" Margin="17,77,0,0" Grid.Row="2" Click="OnRun" VerticalAlignment="Top" Width="67" RenderTransformOrigin="0.821,0.2">
+        <Button Name="RunButton" ToolTip="Go over log records at the indicated speed" HorizontalAlignment="Left" Height="35" Margin="17,69,0,0" Grid.Row="2" Click="OnRun" VerticalAlignment="Top" Width="67" RenderTransformOrigin="0.821,0.2">
             _Run
         </Button>
-        <Button x:Name="FollowButton" ToolTip="Go over log records, keeping the indicated distance from the last execState" HorizontalAlignment="Left" Height="35" Margin="90,77,0,0" Grid.Row="2" Click="OnFollow" VerticalAlignment="Top" Width="67" RenderTransformOrigin="0.821,0.2" Content="_Follow"/>
+        <Button x:Name="FollowButton" ToolTip="Go over log records, keeping the indicated distance from the last execState" HorizontalAlignment="Left" Height="35" Margin="90,69,0,0" Grid.Row="2" Click="OnFollow" VerticalAlignment="Top" Width="67" RenderTransformOrigin="0.821,0.2" Content="_Follow"/>
 
-        <Button Name="PauseButton" ToolTip="Pause the visualisation run" HorizontalAlignment="Left" Height="35" Margin="236,77,0,0" Grid.Row="2" Click="OnPause" VerticalAlignment="Top" Width="67" IsEnabled="false">
+        <Button Name="PauseButton" ToolTip="Pause the visualisation run" HorizontalAlignment="Left" Height="35" Margin="236,69,0,0" Grid.Row="2" Click="OnPause" VerticalAlignment="Top" Width="67" IsEnabled="false">
             _Pause</Button>
 
         <!--Button Click="Go" ToolTip="Move to the state with indicated number" Content="Go" Margin="460,78,845,37" Width="80" Grid.Row="2"/-->
@@ -432,9 +546,9 @@
         <!--Button Name="ExiButton" ToolTip="Close the application" Click="OnExit" Content="E_xit" Margin="1007,78,300,37" Width="80" Grid.Row="2"/-->
         <!--Button Name="ConfigButton" ToolTip="Change the visualisation configuration" Click="OnConfig" Content="_Config" Margin="901,78,405,37" Width="80" Grid.Row="2" Grid.Column="0"/-->
 
-        <Button Name="StopButton" ToolTip="Stop the visualisation run" HorizontalAlignment="Left" Height="35" Margin="309,77,0,0" Grid.Row="2" Click="OnStop" VerticalAlignment="Top" Width="67" Content="_Stop" IsEnabled="false"/>
-        <CheckBox Name="CheckBox1" Content="Actual" HorizontalAlignment="Left" Height="17" Margin="701,108,0,0" Grid.Row="2" VerticalAlignment="Top" Width="82" Checked="CheckBox1_Checked" Unchecked="CheckBox1_Unchecked"/>
-        <Slider Name="SpeedSlider" HorizontalAlignment="Left" Height="26" Margin="701,77,0,0" Grid.Row="2" VerticalAlignment="Top" Width="114" 
+        <Button Name="StopButton" ToolTip="Stop the visualisation run" HorizontalAlignment="Left" Height="35" Margin="309,69,0,0" Grid.Row="2" Click="OnStop" VerticalAlignment="Top" Width="67" Content="_Stop" IsEnabled="false"/>
+        <CheckBox Name="CheckBox1" Content="Actual" HorizontalAlignment="Left" Height="17" Margin="706,96,0,0" Grid.Row="2" VerticalAlignment="Top" Width="82" Checked="CheckBox1_Checked" Unchecked="CheckBox1_Unchecked"/>
+        <Slider Name="SpeedSlider" HorizontalAlignment="Left" Height="26" Margin="701,69,0,0" Grid.Row="2" VerticalAlignment="Top" Width="114" 
                 TickPlacement="TopLeft" 
                 ToolTip="Period of execState changes during the visualisation run. When actual is checked, execState changes are reflected with the speed they originally happened"
                 ValueChanged="Slider_ValueChanged" 
@@ -442,16 +556,16 @@
                 Maximum="3"
                 Ticks="0.5, 1, 1.5, 2, 2.5, 3"
                 Value="3"/>
-        <Label Content="State change&#x0a;period (sec):" HorizontalAlignment="Left" Margin="605,77,0,0" Grid.Row="2" VerticalAlignment="Top"/>
+        <Label Content="State change&#x0a;period (sec):" HorizontalAlignment="Left" Margin="605,69,0,0" Grid.Row="2" VerticalAlignment="Top"/>
         <CheckBox Name="ChkBox" Content="CheckBox" HorizontalAlignment="Left" Height="18" Margin="1139,20,0,0" Grid.Row="2" VerticalAlignment="Top" Width="13" Visibility="Collapsed"/>
-        <Button x:Name="ConfigButton" ToolTip="Change the visualisation configuration" HorizontalAlignment="Left" Height="35" Margin="907,78,0,0" Grid.Row="2" Click="OnConfig" VerticalAlignment="Top" Width="83" RenderTransformOrigin="0.821,0.2" Content="_Config"/>
-        <Button x:Name="ExitButton" ToolTip="Close the application" HorizontalAlignment="Left" Height="35" Margin="1009,78,0,0" Grid.Row="2" Click="OnExit" VerticalAlignment="Top" Width="83" RenderTransformOrigin="0.821,0.2" Content="_Exit"/>
-        <Button x:Name="GoButton" ToolTip="Move to the execState with indicated number" HorizontalAlignment="Left" Height="35" Margin="463,77,0,0" Grid.Row="2" Click="Go" VerticalAlignment="Top" Width="67" RenderTransformOrigin="0.821,0.2" Content="_Go"/>
+        <Button x:Name="ConfigButton" ToolTip="Change the visualisation configuration" HorizontalAlignment="Left" Height="35" Margin="907,70,0,0" Grid.Row="2" Click="OnConfig" VerticalAlignment="Top" Width="83" RenderTransformOrigin="0.821,0.2" Content="_Config"/>
+        <Button x:Name="ExitButton" ToolTip="Close the application" HorizontalAlignment="Left" Height="35" Margin="1009,70,0,0" Grid.Row="2" Click="OnExit" VerticalAlignment="Top" Width="83" RenderTransformOrigin="0.821,0.2" Content="_Exit"/>
+        <Button x:Name="GoButton" ToolTip="Move to the execState with indicated number" HorizontalAlignment="Left" Height="35" Margin="463,69,0,0" Grid.Row="2" Click="Go" VerticalAlignment="Top" Width="67" RenderTransformOrigin="0.821,0.2" Content="_Go"/>
         <!--TextBox  Text="0"  Grid.Column="0" Margin="406,85,941,39" Grid.Row="2"  VerticalAlignment="Top" Width="30" RenderTransformOrigin="0.821,0.2" /-->
-        <TextBox x:Name="LineNumber" HorizontalAlignment="Left" Height="26" Margin="407,81,0,0" Grid.Row="2" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="51"/>
+        <TextBox x:Name="LineNumber" HorizontalAlignment="Left" Height="26" Margin="407,73,0,0" Grid.Row="2" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="51" TextChanged="LineNumber_TextChanged"/>
 
         <Grid Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Right"
-                          Margin="0,85,10,25">
+                          Margin="0,70,10,30">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
@@ -461,7 +575,7 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <TextBlock Name="IndexBlock" Width="80"  Grid.Column="1" Text="{Binding Path=Index, UpdateSourceTrigger=PropertyChanged}"/>
-            <TextBlock Width="100" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Right" Height="20" Text="Step number:"/>
+            <TextBlock Width="100" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Right" Height="20" Text="State number:"/>
 
 
 
@@ -479,7 +593,28 @@
         <Label Grid.Column="0" Content="2" HorizontalAlignment="Left" Height="25" Margin="762,54,0,0" Grid.Row="2" VerticalAlignment="Top" Width="23" FontSize="8"/>
         <Label Grid.Column="0" Content="2.5" HorizontalAlignment="Left" Height="25" Margin="779,54,0,0" Grid.Row="2" VerticalAlignment="Top" Width="23" FontSize="8"/>
         <Label Grid.Column="0" Content="3" HorizontalAlignment="Left" Height="25" Margin="803,54,0,0" Grid.Row="2" VerticalAlignment="Top" Width="23" FontSize="8"/>
+        <StatusBar HorizontalAlignment="Left" Height="32" Margin="0,118,0,0" Grid.ColumnSpan="2" Grid.Row="2" Grid.Column="0"  VerticalAlignment="Top" Width="1396">
+            <Label Name="StatusLabel" Content="Hello" Margin="0" FontSize="12"/>
+        </StatusBar>
+        <Label Grid.Column="0" Content="0" HorizontalAlignment="Left" Height="25" Margin="16,34,0,0" Grid.Row="2" VerticalAlignment="Top" Width="23" FontSize="8"/>
+        <Label Name="SliderMark1" Grid.Column="0" Content="" HorizontalAlignment="Left" Height="25" Margin="122,34,0,0" Grid.Row="2" VerticalAlignment="Top" Width="23" FontSize="8"/>
+        <Label Name="SliderMark2" Grid.Column="0" Content="" HorizontalAlignment="Left" Height="25" Margin="223,34,0,0" Grid.Row="2" VerticalAlignment="Top" Width="23" FontSize="8"/>
+        <Label Name="SliderMark3" Grid.Column="0" Content="" HorizontalAlignment="Left" Height="25" Margin="331,34,0,0" Grid.Row="2" VerticalAlignment="Top" Width="23" FontSize="8"/>
+        <Label Name="SliderMark4" Grid.Column="0" Content="" HorizontalAlignment="Left" Height="25" Margin="437,34,0,0" Grid.Row="2" VerticalAlignment="Top" Width="23" FontSize="8"/>
+        <Label Name="SliderMark5" Grid.Column="0" Content="" HorizontalAlignment="Left" Height="25" Margin="543,34,0,0" Grid.Row="2" VerticalAlignment="Top" Width="23" FontSize="8"/>
+        <Label Name="SliderMark6" Grid.Column="0" Content="" HorizontalAlignment="Left" Height="25" Margin="651,34,0,0" Grid.Row="2" VerticalAlignment="Top" Width="23" FontSize="8"/>
+        <Label Name="SliderMark7" Grid.Column="0" Content="" HorizontalAlignment="Left" Height="25" Margin="757,33,0,0" Grid.Row="2" VerticalAlignment="Top" Width="23" FontSize="8"/>
+        <Label Name="SliderMark8" Grid.Column="0" Content="" HorizontalAlignment="Left" Height="25" Margin="862,34,0,0" Grid.Row="2" VerticalAlignment="Top" Width="23" FontSize="8"/>
+        <Label Name="SliderMark9" Grid.Column="0" Content="" HorizontalAlignment="Left" Height="25" Margin="968,34,0,0" Grid.Row="2" VerticalAlignment="Top" Width="23" FontSize="8"/>
+        <Label Name="SliderMark10" Grid.Column="0" Content="" HorizontalAlignment="Left" Height="25" Margin="1075,34,0,0" Grid.Row="2" VerticalAlignment="Top" Width="23" FontSize="8"/>
+        <Rectangle Name="PlaceMarker" Fill="BlueViolet"  HorizontalAlignment="Left" Grid.Column="0" Height="30" Margin="22,4,0,0" Grid.Row="2" VerticalAlignment="Top" Width="2" Visibility="Collapsed">
+            <Rectangle.RenderTransform>
+                <TranslateTransform X="{Binding Path=Text, ElementName=LineNumber, Converter={StaticResource Converter}}" Y="0"/>
+                <!-- RotateTransform Angle="{Binding Path=Value, ElementName=MainSlider}">Visibility="{Binding HasFunction, 
+            Converter={StaticResource converter}}"</-->
+            </Rectangle.RenderTransform>
+        </Rectangle>
+
     </Grid>
-
-
 </Window>
+

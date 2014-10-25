@@ -15,7 +15,8 @@ namespace AgentsRebuilt
         public SystemEvent Event = null;
         public ObservableCollection<Item> Auctions = new ObservableCollection<Item>();
         public ObservableCollection<Item> CommonRights = new ObservableCollection<Item>();
-
+        public ObservableCollection<Agent> AllAgents = new ObservableCollection<Agent>();
+        public ObservableCollection<Item> AllItems = new ObservableCollection<Item>();
 
         //public AgentState ShallowCopy()
         //{

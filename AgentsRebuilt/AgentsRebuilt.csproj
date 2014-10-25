@@ -62,6 +62,7 @@
     <Compile Include="ANcillaryElts\AgentDataDictionary.cs" />
     <Compile Include="ANcillaryElts\ExecutionState.cs" />
     <Compile Include="ANcillaryElts\ItemTemplateSelector.cs" />
+    <Compile Include="ANcillaryElts\LineNumberToCoordinateConverter.cs" />
     <Compile Include="Configuration\CfgSettings.cs" />
     <Compile Include="Configuration\CfgStr.cs" />
     <Compile Include="CfgWindow.xaml.cs">

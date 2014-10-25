@@ -92,6 +92,19 @@ namespace AgentsRebuilt
                 agList.Add(new Agent("god", new List<KVP>(), _agentDataDictionary, uiThread));
             }
             state.Agents = agList;
+
+            foreach (var ag in state.AllAgents)
+            {
+                if (!StateObjectMapper.ContainsAgent(state.Agents, ag.ID))
+                {
+                    ag.Status = ElementStatus.Deleted;
+                }
+                else
+                {
+                    ag.Status = ElementStatus.Unchanged;
+                }
+            }
+
             state.Auctions = aucList;
             state.CommonRights = comList;
             return state;
@@ -113,6 +126,20 @@ namespace AgentsRebuilt
             UpdateAuctions(oldState.Auctions, newState.Auctions, uiThread);
             UpdateCommons(oldState.CommonRights, newState.CommonRights, uiThread);
             UpdateStep(oldState.Agents, newState.Agents, uiThread);
+            oldState.AllAgents = newState.AllAgents;
+            oldState.AllItems = newState.AllItems;
+            foreach (var ag in oldState.AllAgents)
+            {
+                if (!StateObjectMapper.ContainsAgent(oldState.Agents, ag.ID))
+                {
+                    ag.Status = ElementStatus.Deleted;
+                }
+                else
+                {
+                    ag.Status = ElementStatus.Unchanged;
+                }
+            }
+            
         }
 
         private static void UpdateCommons(ObservableCollection<Item> oldCommons,
@@ -236,7 +263,7 @@ namespace AgentsRebuilt
             }
         }
 
-        private static bool ContainsAgent(ObservableCollection<Agent> lst, String id)
+        public static bool ContainsAgent(ObservableCollection<Agent> lst, String id)
         {
             foreach (var ag in lst)
             {

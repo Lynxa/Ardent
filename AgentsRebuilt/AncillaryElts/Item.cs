@@ -42,6 +42,21 @@ namespace AgentsRebuilt
             get { return this.Type.ToString() + "s"; }
         }
 
+        public Item GetNeutralCopy()
+        {
+            var result = new Item(Key, ListOfItems, cfgSettings, ImageDictionary, UIDispatcher);
+            result.StringAttributeList = new Dictionary<string, string>();
+            foreach (var keyvaluepair in StringAttributeList)
+            {
+                result.StringAttributeList.Add(String.Copy(keyvaluepair.Key), String.Copy(keyvaluepair.Value));
+            }
+            result.Status = ElementStatus.Unchanged;
+            result.ImageDictionary = ImageDictionary;
+            result.InstanceOf = InstanceOf;
+
+            return result;
+        }
+
         public ElementStatus Status
         {
             get { return st; }

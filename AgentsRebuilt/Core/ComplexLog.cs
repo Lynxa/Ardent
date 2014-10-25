@@ -1,11 +1,28 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace AgentsRebuilt
 {
     internal class ComplexLog
     {
         private List<Dictionary<string, AgentState>> _dict = new List<Dictionary<string, AgentState>>();
+
+
+        public void UpdateStatesAgentsItems (ObservableCollection<Agent> allAgents, ObservableCollection<Item> allItems, String agentID)
+        {
+            foreach (var dcc in _dict)
+            {
+                AgentState tpState;
+                dcc.TryGetValue(agentID, out tpState);
+                if (tpState != null)
+                {
+                    tpState.AllAgents = allAgents;
+                    tpState.AllItems = allItems;
+                }
+            }
+        }
+
         public AgentState this[String agent, int i]
         {
             get

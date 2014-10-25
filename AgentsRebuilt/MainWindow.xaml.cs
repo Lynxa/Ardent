@@ -100,7 +100,9 @@ namespace AgentsRebuilt
         private void RunFromLog(CfgSettings Config)
         {
             ObservableCollection<Agent> visualAgents;
+            ObservableCollection<Agent> visualAgentsPane;
             ObservableCollection<Item> visualAuctions;
+            ObservableCollection<Item> visualItemsPane;
             ObservableCollection<Item> visualCommons;
             ObservableCollection<String> tradeLog = null;
             
@@ -172,17 +174,25 @@ namespace AgentsRebuilt
                                                 visualAgents = ast.Agents;
                                                 visualAuctions = ast.Auctions;
                                                 visualCommons = ast.CommonRights;
+                                                visualAgentsPane = ast.AllAgents;
+                                                visualItemsPane = ast.AllItems;
+
                                                 tradeLog = new ObservableCollection<string>() {};
 
                                                 AgentsList.DataContext = visualAgents;
                                                 AuctionsList.DataContext = visualAuctions;
                                                 CommonsList.DataContext = visualCommons;
+                                                AgentsPane.DataContext = visualAgentsPane;
+                                                ItemsPane.DataContext = visualItemsPane;
 
                                                 //ast.Clock.StepNo = _logProcessor.Index;
                                                 ClockList.DataContext = ast.Clock.TextList;
                                                 ClockListNames.DataContext = ast.Clock.TextListNames;
                                                 MainSlider.Maximum = _logProcessor.GetNumber-1;
                                                 MainSlider.Value = _logProcessor.Index-1;
+                                                UpdateSliderMarks(dsc, _logProcessor.GetNumber);
+                                                LineNumberToCoordinateConverter.FieldCount = _logProcessor.GetNumber;
+
                                                 if (_currentAgent != "god")
                                                 {
                                                     MainSlider.IsSelectionRangeEnabled = true;
@@ -200,8 +210,8 @@ namespace AgentsRebuilt
                                                 if (ast.Event != null && ast.Event.Message != "")
                                                     tradeLog.Add(ast.Event.Message);
 
-                                                AuctionsLabel.Text =  ast.Auctions != null && ast.Auctions.Count!=0 ? "Auctions" : "";
-                                                CommonsLabel.Text = ast.CommonRights != null && ast.CommonRights.Count != 0 ? "Common rights" : "";
+                                                //AuctionsLabel.Text =  ast.Auctions != null && ast.Auctions.Count!=0 ? "Auctions" : "";
+                                                //CommonsLabel.Text = ast.CommonRights != null && ast.CommonRights.Count != 0 ? "Common rights" : "";
                                                 IndexBlock.DataContext = _logProcessor;
                                                 AgentBlock.DataContext = _logProcessor;
 
@@ -235,8 +245,8 @@ namespace AgentsRebuilt
                                                         TradeChannel.Items[TradeChannel.Items.Count - 1]);
                                                 }
 
-                                                AuctionsLabel.Text = ast.Auctions != null && ast.Auctions.Count != 0 ? "Auctions" : "";
-                                                CommonsLabel.Text = ast.CommonRights != null && ast.CommonRights.Count != 0 ? "Common rights" : "";
+                                                //AuctionsLabel.Text = ast.Auctions != null && ast.Auctions.Count != 0 ? "Auctions" : "";
+                                                //CommonsLabel.Text = ast.CommonRights != null && ast.CommonRights.Count != 0 ? "Common rights" : "";
                                                 //znaju, chto kostyl'. No sil moih net vozit'sja dal'she s data bindingom.
                                             });
                                         }
@@ -245,6 +255,9 @@ namespace AgentsRebuilt
                                     else
                                     {
                                         _logProcessor.InitOrReread(Config.HistPath, _agentDataDictionary, Dispatcher, _currentAgent);
+                                        LineNumberToCoordinateConverter.FieldCount = _logProcessor.GetNumber;
+                                        UpdateSliderMarks(dsc, _logProcessor.GetNumber);
+                                                
 
                                     }
                                 }
@@ -350,6 +363,26 @@ namespace AgentsRebuilt
                 }
         }
 
+        private void UpdateSliderMarks(Dispatcher dsc, int number)
+        {
+            dsc.Invoke(() =>
+            {
+                SliderMark10.Content = number - 1;
+                {
+                    SliderMark1.Content = (int) (number / 10);
+                    SliderMark2.Content = (int)(number *2 / 10);
+                    SliderMark3.Content = (int)(number *3 / 10);
+                    SliderMark4.Content = (int)(number *4 / 10);
+                    SliderMark5.Content = (int)(number *5 / 10);
+                    SliderMark6.Content = (int)(number *6 / 10);
+                    SliderMark7.Content = (int)(number *7 / 10);
+                    SliderMark8.Content = (int)(number *8 / 10);
+                    SliderMark9.Content = (int)(number * 9/ 10);
+                }
+
+            });
+        }
+
 
         #region Config
 
@@ -386,9 +419,9 @@ namespace AgentsRebuilt
                     StopButton.IsEnabled = true;
                     PauseButton.IsEnabled = true;
                     ConfigButton.IsEnabled = false;
-                    _logProcessor.SetIndex(0);
+                    _logProcessor.SetIndex(_logProcessor.GetAgentStartStep(_currentAgent));
                     isFirstLine = true;
-                    MainSlider.Value = 0;
+                    MainSlider.Value = _logProcessor.GetAgentStartStep(_currentAgent);
 
                     RunFromLog(Config);
                     _stopSleeping = true;                    
@@ -428,9 +461,9 @@ namespace AgentsRebuilt
                     StopButton.IsEnabled = true;
                     PauseButton.IsEnabled = true;
                     ConfigButton.IsEnabled = false;
-                    _logProcessor.SetIndex(0);
+                    _logProcessor.SetIndex(_logProcessor.GetAgentStartStep(_currentAgent));
                     isFirstLine = true;
-                    MainSlider.Value = 0;
+                    MainSlider.Value = _logProcessor.GetAgentStartStep(_currentAgent);
 
                     RunFromLog(Config);
                     _stopSleeping = true;
@@ -438,6 +471,7 @@ namespace AgentsRebuilt
             }
             if (execState == ExecutionState.Paused)
             {
+                _logProcessor.SetCurrentLatency();
                 execState = ExecutionState.Following;
                 _stopSleeping = true;
             }
@@ -550,7 +584,42 @@ namespace AgentsRebuilt
         private void MainSlider_OnValueChangedSlider_ValueChanged(object sender,
             RoutedPropertyChangedEventArgs<double> e)
         {
+            if (execState != ExecutionState.Stopped && (int)MainSlider.Value != _logProcessor.Index - 1)
+            {
+                double d = MainSlider.Value;
+                int tp = (int)d;
+                if (tp < _logProcessor.GetAgentStartStep(_currentAgent))
+                {
+                    tp = _logProcessor.GetAgentStartStep(_currentAgent);
+                    //MainSlider.Value = tp;
+                }
+                else if (tp > _logProcessor.GetAgentEndStep(_currentAgent))
+                {
+                    tp = _logProcessor.GetAgentEndStep(_currentAgent);
+                    //MainSlider.Value = tp;
+                }
 
+                Task.Factory.StartNew(() =>
+                {
+
+                    lock (_lockerLogProcessorIndex)
+                    {
+                        if (_logProcessor.GetNumber < tp || tp < 0)
+                        {
+                            System.Windows.MessageBox.Show("Illegal step number");
+                            return;
+                        }
+                        //ast = null;
+                        isFirstLine = true;
+                        _move_to = tp;
+                        if (execState != ExecutionState.Moving)
+                        {
+                            _previousState = execState;
+                            execState = ExecutionState.Moving;
+                        }
+                    }
+                });
+            }
         }
 
         private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -598,7 +667,7 @@ namespace AgentsRebuilt
 
         private void KVPItem_Clicked(object sender, RoutedEventArgs e)
         {
-            var item = sender as ListBoxItem;
+            var item = sender as Grid;
             Item tp = (Item)item.DataContext;
             Window frm3 = new ItemWindow(tp);
             frm3.Show();
@@ -608,46 +677,50 @@ namespace AgentsRebuilt
         private void CommonRightsItem_Clicked(object sender, MouseButtonEventArgs e)
         {
             var item = sender as System.Windows.Controls.Button;
-            Item tp = (Item)item.DataContext;
-            Window frm3 = new ItemWindow(tp);
-            frm3.Show();
+            var st = item.DataContext.GetType();
+            if (st.Name.Equals("Item"))
+            {
+                Item tp = (Item) item.DataContext;
+                Window frm3 = new ItemWindow(tp);
+                frm3.Show();
+            }
+            else if (st.Name.Equals("Agent"))
+            {
+                Agent tp = (Agent) item.DataContext;
+                tp.IsPaneExpanded = !tp.IsPaneExpanded;
+            }
+        
         }
 
         private void MainSlider_DragLeave(object sender, System.Windows.DragEventArgs e)
         {
-            if (execState != ExecutionState.Stopped && (int)MainSlider.Value != _logProcessor.Index - 1)
+           
+        }
+
+        private void LineNumber_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (PlaceMarker == null) return;
+            string text = LineNumber.Text;
+            int tp;
+            bool t = Int32.TryParse(text, out tp);
+
+            if (!LineNumber.Text.Equals("0") && !LineNumber.Text.Equals("") && (tp >= 0 && tp < _logProcessor.GetNumber))
             {
-                double d = MainSlider.Value;
-                int tp = (int)d;
-                if (tp < _logProcessor.GetAgentStartStep(_currentAgent))
-                {
-                    tp = _logProcessor.GetAgentStartStep(_currentAgent);
-                    //MainSlider.Value = tp;
-                }
-                else if (tp > _logProcessor.GetAgentEndStep(_currentAgent))
-                {
-                    tp = _logProcessor.GetAgentEndStep(_currentAgent);
-                    //MainSlider.Value = tp;
-                }
-
-                Task.Factory.StartNew(() =>
-                {
-
-                    lock (_lockerLogProcessorIndex)
+                 {
+                    this.Dispatcher.Invoke(() =>
                     {
-                        if (_logProcessor.GetNumber < tp || tp < 0)
-                        {
-                            System.Windows.MessageBox.Show("Illegal step number");
-                            return;
-                        }
-                        //ast = null;
-                        isFirstLine = true;
-                        _move_to = tp - 1;
-                        _previousState = execState;
-                        execState = ExecutionState.Moving;
-                    }
+                        PlaceMarker.Visibility = Visibility.Visible;
+                    });
+                }
+            }
+            else
+            {
+                this.Dispatcher.Invoke(() =>
+                {
+                    PlaceMarker.Visibility = Visibility.Collapsed;
                 });
             }
         }
+
     }
 }

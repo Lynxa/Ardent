@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Dynamic;
 using System.IO;
@@ -21,7 +22,9 @@ namespace AgentsRebuilt
         private ComplexLog _states;
         private List<String> _agts = new List<string>() {"god"};
         private List<String> _agentsWithLogAvailable = new List<string>() {"god"};
+       
         private Dictionary<String, int> _stateTimeStampDictionary = new Dictionary<string, int>();
+        
         private Dictionary<String, Duo> _agentSteps = new Dictionary<string, Duo>();
         
 
@@ -90,6 +93,9 @@ namespace AgentsRebuilt
             int tCounter = 0;
             var _log = System.IO.File.ReadAllLines(filename).ToList<String>();
             _log = RemoveEmpty(_log);
+             
+            ObservableCollection<Agent> _allAgents = new ObservableCollection<Agent>();
+            ObservableCollection<Item> _allItems = new ObservableCollection<Item>();
 
             foreach (var line in _log)
             {
@@ -116,13 +122,25 @@ namespace AgentsRebuilt
                         
                         foreach (var ag in tst.Agents)
                         {
+                            if (!StateObjectMapper.ContainsAgent(_allAgents, ag.ID))
+                            {
+                                _allAgents.Add(ag.GetNeutralCopy());
+                                foreach (var it in ag.Items)
+                                {
+                                    if (it.Type == ItemType.Asset)
+                                    {
+                                        _allItems.Add(it.GetNeutralCopy());
+                                    }
+                                }
+                            }
+
                             if (!_agts.Contains(ag.ID))
                             {
                                 _agts.Add(ag.ID);
                             }
                             if (!_agentSteps.ContainsKey(ag.ID))
                             {
-                                _agentSteps.Add(ag.ID, new Duo(tCounter, 0));
+                                _agentSteps.Add(ag.ID, new Duo(tCounter, _log.Count-1));
                             }
                             else
                             {
@@ -139,8 +157,13 @@ namespace AgentsRebuilt
                 }
             }
 
+            _states.UpdateStatesAgentsItems(_allAgents, _allItems, "god");
+            
+
             foreach (var ag in _agts)
             {
+                 ObservableCollection<Agent> _allAgents_for_cur = new ObservableCollection<Agent>();
+                 ObservableCollection<Item> _allItems_for_cur = new ObservableCollection<Item>();
                 String agFile = filename.Remove(filename.LastIndexOf("."), 3);
                 agFile += "_" + ag + ".db";
                 if (File.Exists(agFile))
@@ -168,9 +191,28 @@ namespace AgentsRebuilt
                                 _stateTimeStampDictionary.TryGetValue(tst2.Clock.HappenedAt, out tStep);
                                 tst2.Clock.StepNo = tStep;
                                 _states.Add(tst2, ag);
+                                foreach (var ag1 in tst2.Agents)
+                                {
+                                    if (!StateObjectMapper.ContainsAgent(_allAgents_for_cur, ag1.ID))
+                                    {
+                                        _allAgents_for_cur.Add(ag1.GetNeutralCopy());
+                                        foreach (var it in ag1.Items)
+                                        {
+                                            if (it.Type == ItemType.Asset)
+                                            {
+                                                _allItems_for_cur.Add(it.GetNeutralCopy());
+                                            }
+                                        }
+                                    }
+                                }
+
                             }
+
                         }
+
                     }
+                    _states.UpdateStatesAgentsItems(_allAgents_for_cur, _allItems_for_cur, ag);
+                    
 
                 }   
             }
@@ -186,9 +228,12 @@ namespace AgentsRebuilt
         public bool GetNextLine(out AgentState result, ExecutionState execState)
         {
             AgentState sTate = null;
+            int start = GetAgentStartStep(_currentAgent);
+            int end = GetAgentEndStep(_currentAgent);
+
             if (execState == ExecutionState.Running )
             {
-                if (_states.Count > Index)
+                if (end >= Index)
                 {
                     sTate = _states[_currentAgent,Index];
                     Index++;
@@ -197,14 +242,14 @@ namespace AgentsRebuilt
             }
             else if (execState == ExecutionState.Moving)
             {
-                int start = GetAgentStartStep(_currentAgent);
-                if (Index==start && _states.Count > start)
+               
+                if (Index==start && end >= start)
                 {
                     sTate = _states[_currentAgent, Index];
                     Index++;
                     _latency--;
                 }
-                else if (_states.Count > Index && Index > start)
+                else if (end >= Index && Index > start)
                 {
                     sTate = new AgentState();
                     var sTate1 = _states[_currentAgent, Index-1];
@@ -218,10 +263,24 @@ namespace AgentsRebuilt
             }
             else if (execState == ExecutionState.Following)
             {
-                if (_states.Count > Index && _latency <= (_states.Count - Index))
+                if (end >= Index && _latency <= (end - Index))
                 {
                     sTate = _states[_currentAgent, Index];
                     Index++;
+                }
+            }
+            if (sTate != null)
+            {
+                foreach (var ag in sTate.AllAgents)
+                {
+                    if (!StateObjectMapper.ContainsAgent(sTate.Agents, ag.ID))
+                    {
+                        ag.Status = ElementStatus.Deleted;
+                    }
+                    else
+                    {
+                        ag.Status = ElementStatus.Unchanged;
+                    }
                 }
             }
             result = sTate;
@@ -235,6 +294,7 @@ namespace AgentsRebuilt
             {
                 sTate = _states[_currentAgent, Index-1];
             }
+
 
             result = sTate;
             return (sTate != null);
