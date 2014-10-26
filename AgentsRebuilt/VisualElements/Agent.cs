@@ -76,7 +76,8 @@ namespace AgentsRebuilt
             result.IsPresent = true;
             result.Status = ElementStatus.Unchanged;
             result.Source = Source;
-            
+            result.LastStep = LastStep;
+            result.FirstStep = FirstStep;
             
             return result;
         }

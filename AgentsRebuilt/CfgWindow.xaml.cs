@@ -49,15 +49,22 @@ namespace AgentsRebuilt
 
         private void iconOpenBtn_Click(object sender, RoutedEventArgs e)
         {
-            var openFileDialog1 = new System.Windows.Forms.FolderBrowserDialog();
-            openFileDialog1.RootFolder = Environment.SpecialFolder.MyComputer;
-            openFileDialog1.SelectedPath = TextBox3.Text;
-            DialogResult result = openFileDialog1.ShowDialog();
+            Microsoft.Win32.OpenFileDialog openFileDialog1 = new Microsoft.Win32.OpenFileDialog();
+            bool? userClickedOK = openFileDialog1.ShowDialog();
 
-            if (result == System.Windows.Forms.DialogResult.OK)
+            if (userClickedOK == true)
             {
-                TextBox3.Text = openFileDialog1.SelectedPath;
+                TextBox3.Text = openFileDialog1.FileName;
             }
+            //var openFileDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            //openFileDialog1.RootFolder = Environment.SpecialFolder.MyComputer;
+            //openFileDialog1.SelectedPath = TextBox3.Text;
+            //DialogResult result = openFileDialog1.ShowDialog();
+
+            //if (result == System.Windows.Forms.DialogResult.OK)
+            //{
+            //    TextBox3.Text = openFileDialog1.SelectedPath;
+            //}
         }
 
         private void SaveCfgBtn_Click(object sender, RoutedEventArgs e)

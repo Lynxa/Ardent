@@ -44,6 +44,8 @@ namespace AgentsRebuilt
         private String _lockerLogProcessorIndex = "meta";
         private bool _is_actual = false;
         private String _currentAgent = "god";
+        private DateTime _statusTime;
+        private String _currentMessage;
 
         private AgentDataDictionary _agentDataDictionary;
         private double _statePeriod;
@@ -132,6 +134,17 @@ namespace AgentsRebuilt
                                 if (execState == ExecutionState.Running || execState == ExecutionState.Following ||execState==ExecutionState.Moving 
                                     || execState == ExecutionState.Switching)
                                 {
+                                    if (_statusTime.AddSeconds(5) < DateTime.Now)
+                                    {
+                                        //StatusLabel.Foreground = new SolidColorBrush(Colors.Red);
+                                        this.Dispatcher.Invoke(() =>
+                                        {
+                                            StatusLabel.Foreground = new SolidColorBrush(Colors.Black);
+                                            StatusLabel.Content = _currentMessage;
+                                            _statusTime = DateTime.Now;
+                                        });
+                                    }
+
                                     Boolean isLine;
 
                                     if (execState == ExecutionState.Moving)
@@ -422,6 +435,13 @@ namespace AgentsRebuilt
                     _logProcessor.SetIndex(_logProcessor.GetAgentStartStep(_currentAgent));
                     isFirstLine = true;
                     MainSlider.Value = _logProcessor.GetAgentStartStep(_currentAgent);
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        StatusLabel.Foreground = new SolidColorBrush(Colors.Black);
+                        StatusLabel.Content = "The visualisation is executing in Run mode";
+                    });
+                    _statusTime = DateTime.Now;
+                    _currentMessage = "The visualisation is executing in Run mode";
 
                     RunFromLog(Config);
                     _stopSleeping = true;                    
@@ -437,13 +457,31 @@ namespace AgentsRebuilt
                 PauseButton.IsEnabled = true;
                 ConfigButton.IsEnabled = false;
                 _stopSleeping = true;
+
+                this.Dispatcher.Invoke(() =>
+                {
+                    StatusLabel.Foreground = new SolidColorBrush(Colors.Black);
+                    StatusLabel.Content = "The visualisation is executing in Run mode";
+                });
+
+                _statusTime = DateTime.Now;
+                _currentMessage = "The visualisation is executing in Run mode";
             }
             if (execState == ExecutionState.Following)
             {
                 execState = ExecutionState.Running;
                 RunButton.IsEnabled = false;
+                PauseButton.IsEnabled = true;
                 FollowButton.IsEnabled = true;
                 _stopSleeping = true;
+
+                this.Dispatcher.Invoke(() =>
+                {
+                    StatusLabel.Foreground = new SolidColorBrush(Colors.Black);
+                    StatusLabel.Content = "The visualisation is executing in Run mode";
+                });
+                _statusTime = DateTime.Now;
+                _currentMessage = "The visualisation is executing in Run mode";
             }
         }
         private void OnFollow(object sender, RoutedEventArgs e)
@@ -463,7 +501,14 @@ namespace AgentsRebuilt
                     ConfigButton.IsEnabled = false;
                     _logProcessor.SetIndex(_logProcessor.GetAgentStartStep(_currentAgent));
                     isFirstLine = true;
-                    MainSlider.Value = _logProcessor.GetAgentStartStep(_currentAgent);
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        MainSlider.Value = _logProcessor.GetAgentStartStep(_currentAgent);
+                        StatusLabel.Foreground = new SolidColorBrush(Colors.Black);
+                        StatusLabel.Content = "The visualisation is executing in Follow mode";
+                    });
+                    _statusTime = DateTime.Now;
+                    _currentMessage = "The visualisation is executing in Follow mode";
 
                     RunFromLog(Config);
                     _stopSleeping = true;
@@ -473,6 +518,13 @@ namespace AgentsRebuilt
             {
                 _logProcessor.SetCurrentLatency();
                 execState = ExecutionState.Following;
+                this.Dispatcher.Invoke(() =>
+                {
+                    StatusLabel.Foreground = new SolidColorBrush(Colors.Black);
+                    StatusLabel.Content = "The visualisation is executing in Follow mode";
+                });
+                _statusTime = DateTime.Now;
+                _currentMessage = "The visualisation is executing in Follow mode";
                 _stopSleeping = true;
             }
             if (execState == ExecutionState.Running)
@@ -481,6 +533,13 @@ namespace AgentsRebuilt
                 execState = ExecutionState.Following;
                 RunButton.IsEnabled = true;
                 FollowButton.IsEnabled = false;
+                this.Dispatcher.Invoke(() =>
+                {
+                    StatusLabel.Foreground = new SolidColorBrush(Colors.Black);
+                    StatusLabel.Content = "The visualisation is executing in Follow mode";
+                });
+                _statusTime = DateTime.Now;
+                _currentMessage = "The visualisation is executing in Follow mode";
                 _stopSleeping = true;
             }
         }
@@ -494,6 +553,13 @@ namespace AgentsRebuilt
                     if (execState == ExecutionState.Running || execState == ExecutionState.Following ||
                         execState == ExecutionState.Paused)
                     {
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            StatusLabel.Foreground = new SolidColorBrush(Colors.Black);
+                            StatusLabel.Content = "The visualisation is stopped";
+                        });
+                        _statusTime = DateTime.Now;
+                        _currentMessage = "The visualisation is stopped";
                         execState = ExecutionState.Stopped;
                        // LogProcessor.SetIndex(LogProcessor.GetNumber - 1);
                     }
@@ -535,29 +601,54 @@ namespace AgentsRebuilt
         private void Go(object sender, RoutedEventArgs e)
         {
             string text = LineNumber.Text;
+            int tp;
+            
+            if (!Int32.TryParse(text, out tp))
+            {
+                this.Dispatcher.Invoke(() =>
+                {
+                    StatusLabel.Foreground = new SolidColorBrush(Colors.Red);
+                    StatusLabel.Content = "Illegal step number!";
+                    _statusTime = DateTime.Now;
+                });
+                //System.Windows.MessageBox.Show("Illegal step number");
+                return;
+            }
+                                 
+            Move(tp);
+            _stopSleeping = true;
+        }
+
+
+        private void Move(int Step)
+        {
             Task.Factory.StartNew(() =>
             {
-                int tp;
+                
                 lock (_lockerLogProcessorIndex)
                 {
-                    bool t = Int32.TryParse(text, out tp);
                     int start = _logProcessor.GetAgentStartStep(_currentAgent);
                     int stop = _logProcessor.GetAgentEndStep(_currentAgent);
 
-                    if (!t || stop < tp || tp < start)
+                    if (stop < Step || Step < start)
                     {
-                        System.Windows.MessageBox.Show("Illegal step number");
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            StatusLabel.Foreground = new SolidColorBrush(Colors.Red);
+                            StatusLabel.Content = "Illegal step number!";
+                            _statusTime = DateTime.Now;
+                        });
                         return;
                     }
                     //ast = null;
                     isFirstLine = true;
-                    _move_to = tp;
+                    _move_to = Step;
                     //_logProcessor.SetIndex(tp);
                     //_logProcessor.CurrentAgent = "god";
                     _previousState = execState;
                     execState = ExecutionState.Moving;
                 }
-               
+
             });
             _stopSleeping = true;
         }
@@ -576,6 +667,15 @@ namespace AgentsRebuilt
                 FollowButton.IsEnabled = true;
                 _previousState = execState;
                 execState = ExecutionState.Paused;
+
+                this.Dispatcher.Invoke(() =>
+                {
+                    StatusLabel.Foreground = new SolidColorBrush(Colors.Black);
+                    StatusLabel.Content = "The visualisation is paused at state " + (_logProcessor.Index - 1);
+                });
+                _statusTime = DateTime.Now;
+                _currentMessage = "The visualisation is paused at state " + (_logProcessor.Index-1);
+
                 _stopSleeping = true;
             }
         }
@@ -606,7 +706,12 @@ namespace AgentsRebuilt
                     {
                         if (_logProcessor.GetNumber < tp || tp < 0)
                         {
-                            System.Windows.MessageBox.Show("Illegal step number");
+                            this.Dispatcher.Invoke(() =>
+                            {
+                                StatusLabel.Foreground = new SolidColorBrush(Colors.Red);
+                                StatusLabel.Content = "Illegal step number!";
+                                _statusTime = DateTime.Now;
+                            });
                             return;
                         }
                         //ast = null;
@@ -657,6 +762,15 @@ namespace AgentsRebuilt
                     _previousState = execState;
                     execState = ExecutionState.Switching;
                 }
+                else
+                {
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        StatusLabel.Foreground = new SolidColorBrush(Colors.Red);
+                        StatusLabel.Content = "Agent #" + tp.ID + " doesn't have the log file";
+                        _statusTime = DateTime.Now;
+                    });
+                }
             }
             else
             {
@@ -669,7 +783,7 @@ namespace AgentsRebuilt
         {
             var item = sender as Grid;
             Item tp = (Item)item.DataContext;
-            Window frm3 = new ItemWindow(tp);
+            Window frm3 = new ItemWindow(tp, _logProcessor.Index-1, _logProcessor.GetTimeStampByState(_logProcessor.Index-1));
             frm3.Show();
             //MessageBox.Show("suspicious "+ tp.InstanceOf);
         }
@@ -681,7 +795,7 @@ namespace AgentsRebuilt
             if (st.Name.Equals("Item"))
             {
                 Item tp = (Item) item.DataContext;
-                Window frm3 = new ItemWindow(tp);
+                Window frm3 = new ItemWindow(tp, _logProcessor.Index - 1, _logProcessor.GetTimeStampByState(_logProcessor.Index - 1));
                 frm3.Show();
             }
             else if (st.Name.Equals("Agent"))
@@ -722,5 +836,26 @@ namespace AgentsRebuilt
             }
         }
 
+        private void AgentFirstStepButton_onClick(object sender, RoutedEventArgs e)
+        {
+            var item = sender as System.Windows.Controls.Button;
+            var st = item.DataContext.GetType();
+            if (st.Name.Equals("Agent"))
+            {
+                Agent tp = (Agent)item.DataContext;
+                Move(tp.FirstStep);
+            }
+        }
+
+        private void AgentLastStepButton_onClick(object sender, RoutedEventArgs e)
+        {
+            var item = sender as System.Windows.Controls.Button;
+            var st = item.DataContext.GetType();
+            if (st.Name.Equals("Agent"))
+            {
+                Agent tp = (Agent)item.DataContext;
+                Move(tp.LastStep);
+            }
+        }
     }
 }

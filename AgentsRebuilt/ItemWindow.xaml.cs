@@ -35,7 +35,7 @@ namespace AgentsRebuilt
             set { src = value; }
         }
 
-        public ItemWindow(Item item)
+        public ItemWindow(Item item, int state, String time)
         {
             InitializeComponent();
             Item = item;
@@ -44,6 +44,8 @@ namespace AgentsRebuilt
             listBox1.DataContext = item.StringAttributeList;
             itmInst.DataContext = item.InstanceOf;
             brd1.DataContext = item.BorderBrush2;
+            StateText.DataContext = state;
+            TimeText.DataContext = time;
         }
     }
 }

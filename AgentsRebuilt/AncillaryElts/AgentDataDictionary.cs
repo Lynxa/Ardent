@@ -23,13 +23,15 @@ namespace AgentsRebuilt
         private CfgSettings conf;
         private static List<KVP> _agentDataList = new List<KVP>();
         private static List<KVP> _itemDataList = new List<KVP>();
-
+        private static List<String> _specialList = new List<string>();
 
         public AgentDataDictionary(CfgSettings cfg)
         {
-            String tpath = Path.Combine(cfg.DammagePath, @"domains\visual.pl");
+            //String tpath = Path.Combine(cfg.DammagePath, @"domains\visual.pl");
+            String tpath = cfg.DammagePath;
             _agentDataList = LogProcessor.GetAgentData(tpath);
             _itemDataList = LogProcessor.GetItemData(tpath);
+            _specialList = LogProcessor.GetSpecialData(tpath);
             conf = cfg;
         }
 
@@ -79,10 +81,10 @@ namespace AgentsRebuilt
                 }
 
             }
-            if (!result.Equals("")) result = Path.Combine(conf.DammagePath, result);
+            if (!result.Equals("")) result = Path.Combine(Path.GetDirectoryName(conf.DammagePath), result);
             if (File.Exists(result)) return new BitmapImage(new Uri(result));
 
-            if (!def.Equals("")) def = Path.Combine(conf.DammagePath, def);
+            if (!def.Equals("")) def = Path.Combine(Path.GetDirectoryName(conf.DammagePath), def);
             if (File.Exists(def)) return new BitmapImage(new Uri(def));
 
             Stream s = this.GetType().Assembly.GetManifestResourceStream("AgentsRebuilt.default_agent.png");
@@ -110,10 +112,10 @@ namespace AgentsRebuilt
                     def = def.Remove(def.Length - 1, 1);
                 }
             }
-            if (!result.Equals("")) result = Path.Combine(conf.DammagePath, result);
+            if (!result.Equals("")) result = Path.Combine(Path.GetDirectoryName(conf.DammagePath), result);
             if (File.Exists(result)) return new BitmapImage(new Uri(result));
 
-            if (!def.Equals("")) def = Path.Combine(conf.DammagePath, def);
+            if (!def.Equals("")) def = Path.Combine(Path.GetDirectoryName(conf.DammagePath), def);
             if (File.Exists(def)) return new BitmapImage(new Uri(def));
 
 
@@ -123,6 +125,15 @@ namespace AgentsRebuilt
 
             return ToBitmapSource(bmp);
 
+        }
+
+        public static bool IsSpecialItem(String s)
+        {
+            foreach (var itm in _specialList)
+            {
+                if (s.StartsWith(itm)) return true;
+            }
+            return false;
         }
 
         public static BitmapSource ToBitmapSource(System.Drawing.Bitmap source)

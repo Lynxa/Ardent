@@ -30,7 +30,7 @@ namespace AgentsRebuilt
                 }
 
                 Item tItem = Item.KvpToItem(kvp, _agentDataDictionary, uiThread);
-                if (tItem.InstanceOf.StartsWith("english"))
+                if (AgentDataDictionary.IsSpecialItem(tItem.InstanceOf))
                 {
                     aucList.Add(tItem);
                 }
