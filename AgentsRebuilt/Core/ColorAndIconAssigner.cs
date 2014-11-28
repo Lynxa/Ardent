@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Media;
+using System.Windows.Controls;
 using System.Windows.Media;
 
 namespace AgentsRebuilt
@@ -100,6 +101,46 @@ namespace AgentsRebuilt
                     return c;
                 }
             }
+        }
+
+        public static Color GetOrAssignBackgroundColorById(string id)
+        {
+            if (id.Equals("god")) return Colors.White;
+            Color agentColor, c;
+            if (colorDict.TryGetValue(id, out c))
+            {
+                agentColor = c;
+            }
+            else
+            {
+                if (colorDict.Count < distinctiveColors.Count && distinctiveColors.TryGetValue(colorDict.Count, out c))
+                {
+                    colorDict.Add(id, c);
+                    usedColors.Add(c);
+                    agentColor = c;
+                }
+                else
+                {
+                    //  do
+                    {
+                        Random rnd = new Random();
+                        int num = rnd.Next(0, 140); //count of system.media.colors
+                        c = defaultColor; //THIS IS SUBJECT TO CHANGE BUT IT SEEMS WITH LISTING ALL SYSTEM.MEDIA.COLORS
+                        colorDict.Add(id, c);
+                    }
+                    //  while (usedColors.Contains(c));
+                    agentColor = c;
+                }
+            }
+            if (c == Colors.Aqua) { return Colors.Azure; }
+            if (c == Colors.Orchid) { return Colors.SeaShell; }
+            if (c == Colors.BlueViolet) { return Colors.GhostWhite; }
+            if (c == Colors.Blue) { return Colors.AliceBlue; }
+            if (c == Colors.Red) { return Colors.Linen; }
+            if (c == Colors.Green) { return Colors.MintCream; }
+            if (c == Colors.Orange) { return Colors.FloralWhite; }
+            if (c == Colors.GreenYellow) { return Colors.Honeydew; }
+            return agentColor;
         }
     }
 }

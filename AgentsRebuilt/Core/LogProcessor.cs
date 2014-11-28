@@ -25,8 +25,9 @@ namespace AgentsRebuilt
         private List<String> _agentsWithLogAvailable = new List<string>() {"god"};
        
         private Dictionary<String, int> _stateTimeStampDictionary = new Dictionary<string, int>();
-        private Dictionary<int, String> _stateToTimeDictionary = new Dictionary<int, String>();
-        
+        private Dictionary<int, String> _stateToTimeStampDictionary = new Dictionary<int, String>();
+        private Dictionary<int, int> _stateToTimeSecsDictionary = new Dictionary<int, int>();
+
         private Dictionary<String, Duo> _agentSteps = new Dictionary<string, Duo>();
         
 
@@ -90,7 +91,8 @@ namespace AgentsRebuilt
             _mainDispatcher = _dispatcher;
             _states = new ComplexLog();
             _stateTimeStampDictionary = new Dictionary<string, int>();
-            _stateToTimeDictionary = new Dictionary<int, string>();
+            _stateToTimeStampDictionary = new Dictionary<int, string>();
+            _stateToTimeSecsDictionary = new Dictionary<int, int>();
 
             _currentAgent = curAgent;
             int tCounter = 0;
@@ -120,7 +122,8 @@ namespace AgentsRebuilt
                     {
                         tst.Clock.StepNo = tCounter;
                         _stateTimeStampDictionary.Add(tst.Clock.HappenedAt, tCounter);
-                        _stateToTimeDictionary.Add(tCounter, tst.Clock.HappenedAt);
+                        _stateToTimeStampDictionary.Add(tCounter, tst.Clock.HappenedAt);
+                        _stateToTimeSecsDictionary.Add(tCounter, (int)Double.Parse(tst.Clock.TimeStampH.Replace(".", ",")));
 
                         _states.Add(tst, "god");
                         
@@ -232,7 +235,17 @@ namespace AgentsRebuilt
         {
             String st = "dummy";
 
-            if (_stateToTimeDictionary.ContainsKey(No)) st = _stateToTimeDictionary[No];
+            if (_stateToTimeStampDictionary.ContainsKey(No)) st = _stateToTimeStampDictionary[No];
+
+            return st;
+        }
+
+
+        public int GetTimeByState(int No)
+        {
+            int st = 0;
+
+            if (_stateToTimeSecsDictionary.ContainsKey(No)) st = _stateToTimeSecsDictionary[No];
 
             return st;
         }
@@ -362,6 +375,7 @@ namespace AgentsRebuilt
             if (piece[0].Equals('(') && piece[piece.Length - 1].Equals(')') && piece.IndexOf(',') > 0)
             {
                 String s1 = piece.Substring(1, piece.IndexOf(',') - 1);
+                s1 = s1.Replace("\"", "");
                 String s2 = piece.Substring(piece.IndexOf(',') + 1, piece.Length - piece.IndexOf(',') - 2);
                 if (s2[0].Equals('[') && s2[s2.Length - 1].Equals(']'))
                 {
@@ -386,8 +400,24 @@ namespace AgentsRebuilt
 
                 while ((st.Count() != 0 && ind < sd.Length) || (ind == 0))
                 {
-                    if (sd[ind] == '(') st.Push('(');
-                    if (sd[ind] == ')') st.Pop();
+                    if (st.Count > 0)
+                    {
+                        if (st.Peek() != '"')
+                        {
+                            if (sd[ind] == '(') st.Push('(');
+                            if (sd[ind] == ')') st.Pop();
+                            if (sd[ind] == '"') st.Push('"');
+                        }
+                        else
+                        {
+                            if (sd[ind] == '"') st.Pop();
+                        }
+                    }
+                    else
+                    {
+                            if (sd[ind] == '(') st.Push('(');
+                            if (sd[ind] == '"') st.Push('"');
+                    }
                     tStr.Append(sd[ind]);
                     ind++;
                 }
@@ -519,10 +549,11 @@ namespace AgentsRebuilt
     }
 
 
-    internal static List<string> GetSpecialData(string filename)
+    internal static bool GetSpecialData(string filename, out List<string> speciaList, out String specialName)
     {
         List<String> tsList;
         List<String> resuList = new List<string>();
+        String grpName = "";
         if (File.Exists(filename))
         {
             tsList = File.ReadAllLines(filename).ToList<String>();
@@ -533,37 +564,44 @@ namespace AgentsRebuilt
             }
             
              String line = tsList[i].Replace(" ", "");
-                line = line.Replace("\r", "");
-                line = line.Replace("\n", "");
-                StringBuilder ss = new StringBuilder(line); //proverit', ne odli li tam chasy
-                ss.Remove(0, "special_items(".Length); // length of "state(["
-                ss.Remove(ss.Length - 2, 2); //length of ");"
+            line = line.Replace("\r", "");
+            line = line.Replace("\n", "");
+            StringBuilder ss = new StringBuilder(line); //proverit', ne odli li tam chasy
+            ss.Remove(0, "special_items(".Length); // 
+            ss.Remove(ss.Length - 2, 2); //length of ");"
 
-                StringBuilder sd = new StringBuilder(ss.ToString());
-                Stack<Char> st = new Stack<Char>();
-                StringBuilder tStr = new StringBuilder();
-                int ind = 0;
+            StringBuilder sd = new StringBuilder(ss.ToString());
+            Stack<Char> st = new Stack<Char>();
+            StringBuilder tStr = new StringBuilder();
+            int ind = 0;
 
-                List<KVP> lst = new List<KVP>();
+            List<KVP> lst = new List<KVP>();
 
-                    while ((st.Count() != 0 && ind < sd.Length) || (ind == 0))
-                    {
-                        if (sd[ind] == '(') st.Push('(');
-                        if (sd[ind] == ')') st.Pop();
-                        tStr.Append(sd[ind]);
-                        ind++;
-                    }
-                    if (!tStr.ToString().Equals(""))
-                    {
-                        lst.Add(IsolateValuepair(tStr.ToString()));
-                    }
-                    sd.Remove(0, tStr.Length);
-                    if (sd.Length > 0 && sd[0] == ',')
-                    {
-                        sd.Remove(0, 1);
-                    }
-                    ind = 0;
-                    tStr.Remove(0, tStr.Length);
+            while ((st.Count() != 0 && ind < sd.Length) || (ind == 0))
+            {
+                if (sd[ind] == '(') st.Push('(');
+                if (sd[ind] == ')') st.Pop();
+                tStr.Append(sd[ind]);
+                ind++;
+            }
+            if (!tStr.ToString().Equals(""))
+            {
+                lst.Add(IsolateValuepair(tStr.ToString()));
+            }
+            sd.Remove(0, tStr.Length);
+            if (sd.Length > 0 && sd[0] == ',')
+            {
+                sd.Remove(0, 1);
+            }
+            ind = 0;
+            tStr.Remove(0, tStr.Length);
+            // lst contains group name
+            if (lst.Count > 0)
+            {
+                String tst = lst[0].Value;
+                grpName = tst.Replace("\"", "");
+            }
+
 
             sd.Remove(0, "(members".Length);
             String hr = sd.ToString(1, sd.ToString().Length-2);
@@ -588,11 +626,34 @@ namespace AgentsRebuilt
                     }
                 }
             }
-            return resuList;
+            speciaList = resuList;
+            specialName = grpName;
+            return true;
             
 
         }
-        return null;
+        speciaList = null;
+        specialName = "Error";
+        return false;
+    }
+
+
+    internal bool GetStateByTime(int tp, out int state)
+    {
+        double i2;
+        for (int i = 0; i < _states.Count; i++)
+        {
+            if (_states[CurrentAgent, i]!=null && Double.TryParse(_states[CurrentAgent, i].Clock.TimeStampH.Replace(".", ","), out i2))
+            {
+                if (tp < (int) i2)
+                {
+                    state = i;
+                    return true;
+                }
+            }
+        }
+        state = 0;
+        return false;
     }
     }
 

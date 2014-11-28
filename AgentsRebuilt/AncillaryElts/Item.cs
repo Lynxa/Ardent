@@ -83,11 +83,11 @@ namespace AgentsRebuilt
         {
 
             String tst;
-            if (Key.StartsWith("right") || Key.StartsWith("oblig"))
-            {
-                tst = Key.Contains("(") ? Key.Remove(Key.IndexOf("("), Key.Length - Key.IndexOf("(")) : Key;
-            }
-            else
+            //if (Key.StartsWith("right") || Key.StartsWith("oblig"))
+            //{
+            //    tst = Key.Contains("(") ? Key.Remove(Key.IndexOf("("), Key.Length - Key.IndexOf("(")) : Key;
+            //}
+            //else
             {
                 tst = InstanceOf;
             }

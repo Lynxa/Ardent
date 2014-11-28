@@ -6,6 +6,8 @@ using System.Diagnostics.Eventing.Reader;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Configuration;
+using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -51,6 +53,37 @@ namespace AgentsRebuilt
         private double _statePeriod;
         private bool _stopSleeping=false;
 
+        private bool _hasAdministratorPrivilleges = false;
+
+        private Dispatcher dsc;
+
+        ObservableCollection<Agent> visualAgents;
+        ObservableCollection<Agent> visualAgentsPane;
+        ObservableCollection<Item> visualAuctions;
+        ObservableCollection<Item> visualItemsPane;
+        ObservableCollection<Item> visualCommons;
+        ObservableCollection<String> tradeLog = null;
+
+
+
+        private static StreamWriter _strWriter;
+
+        private static bool Connect(String host, int port)
+        {
+            try
+            {
+                TcpClient _client = new TcpClient();
+                _client.Connect(host, port);
+               NetworkStream stream = _client.GetStream();
+                _strWriter = new StreamWriter(stream);
+                 return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
         public class NameMultiValueConverter : IMultiValueConverter
         {
             public object Convert(object[] values, Type targetType, object parameter,
@@ -95,35 +128,108 @@ namespace AgentsRebuilt
                 _agentDataDictionary = new AgentDataDictionary(Config);
                 _statePeriod = SpeedSlider.Value;
             }
+            AuctionsLabel.Header = "{Special items}";
+            LoadAndSetup(Config);
             //AgentDataDictionary = new AgentDataDictionary(@"D:\#Recent_desktop\UNI\PES602\DMG\dammage 1.0\domains\english.pl");
+
+            if (Config.AdminRights)
+            {
+                string name =  Dialog.MyPrompt("Please enter administration password:","Enter password");
+                if (name.Equals("meta") && Connect("localhost", 5100))
+                {
+                    _hasAdministratorPrivilleges = true;
+                    AdminButton.Visibility = Visibility.Visible;
+                }
+            }
         }
 
-
-        private void RunFromLog(CfgSettings Config)
+        public static class Dialog
+    {
+        public static string MyPrompt(string InputHeader, string FormCaption)
         {
-            ObservableCollection<Agent> visualAgents;
-            ObservableCollection<Agent> visualAgentsPane;
-            ObservableCollection<Item> visualAuctions;
-            ObservableCollection<Item> visualItemsPane;
-            ObservableCollection<Item> visualCommons;
-            ObservableCollection<String> tradeLog = null;
+            Form dlg = new Form();
+            dlg.Width = 300;
+            dlg.Height = 150;
+            dlg.Text = FormCaption;
+            System.Windows.Forms.Label textHeading = new System.Windows.Forms.Label();
+            textHeading.Left = 50;
+            textHeading.Top = 20;
+            textHeading.Width = 230;
+            textHeading.Text = InputHeader;
+
+            System.Windows.Forms.Button grabInput = new System.Windows.Forms.Button() ;
+            grabInput.Text = "Enter";
+            grabInput.Left = 100;
+            grabInput.Top = 70;
+            grabInput.Click += (sender, evt) => {
+                dlg.Close();
+            };
+            System.Windows.Forms.TextBox textC = new System.Windows.Forms.TextBox();
+            textC.Left = 47;
+            textC.Top = 40;
+            textC.Width = 200;
+            textC.UseSystemPasswordChar = true;
+            textC.TabIndex = 0;
             
+            dlg.Controls.Add(grabInput);
+            dlg.Controls.Add(textHeading);
+            dlg.Controls.Add(textC);
+            dlg.ActiveControl = textC;
+            dlg.ShowDialog();
+            return textC.Text;
+        }
+    }
+
+
+        private void LoadAndSetup(CfgSettings Config)
+        {
             if (File.Exists(Config.HistPath))
+            {
                 try
                 {
-                    
-                    Dispatcher dsc = this.Dispatcher;
+
+                    dsc = this.Dispatcher;
 
                     _logProcessor.InitOrReread(Config.HistPath, _agentDataDictionary, dsc, _currentAgent);
                     Item.cfgSettings = Config;
+
+                    StatusLabel.Foreground = new SolidColorBrush(Colors.Black);
+                    StatusLabel.Content = _currentMessage;
+                    LineNumberToCoordinateConverter.FieldCount = _logProcessor.GetNumber;
+                    LineNumberToCoordinateConverter.FieldDuration =
+                    _logProcessor.GetTimeByState(_logProcessor.GetNumber - 1);
+                    MainSlider.Maximum = _logProcessor.GetNumber - 1;
+                    MainSlider.Value = _logProcessor.Index - 1;
+                    AuctionsLabel.Header = AgentDataDictionary.GetSpecialItemGroupName();
+                    UpdateSliderMarks(dsc, _logProcessor.GetNumber);
+
+                }
+                catch
+                {
+                    System.Windows.MessageBox.Show("Something wrong with configuration file content");
+                }
+            }
+            else
+            {
+                System.Windows.MessageBox.Show("Configuration file error: " + Config.HistPath + " cannot be found");
+            }
+        }
+        
+
+        private void RunFromLog(CfgSettings Config)
+        {
+
+            if (File.Exists(Config.HistPath))
+            {
+                try
+                {
+
+                    //Dispatcher dsc = this.Dispatcher;
+
+                    //_logProcessor.InitOrReread(Config.HistPath, _agentDataDictionary, dsc, _currentAgent);
+                    Item.cfgSettings = Config;
                     AgentState newState;
 
-                    
-                    /*TextBlock tb = new TextBlock();
-                    tb.Text = "Hello World";
-                    tb.Background = new SolidColorBrush(Colors.Aqua);
-                    Border bb = new Border();
-                    */
 
                     Task.Factory.StartNew(() =>
                     {
@@ -131,7 +237,7 @@ namespace AgentsRebuilt
                         {
                             lock (_lockerLogProcessorIndex)
                             {
-                                if (execState == ExecutionState.Running || execState == ExecutionState.Following ||execState==ExecutionState.Moving 
+                                if (execState == ExecutionState.Running || execState == ExecutionState.Following || execState == ExecutionState.Moving
                                     || execState == ExecutionState.Switching)
                                 {
                                     if (_statusTime.AddSeconds(5) < DateTime.Now)
@@ -151,9 +257,9 @@ namespace AgentsRebuilt
                                     {
                                         _logProcessor.SetIndex(_move_to);
                                     }
-                                    
+
                                     //else
-                                        if (execState != ExecutionState.Switching)
+                                    if (execState != ExecutionState.Switching)
                                     {
                                         isLine = _logProcessor.GetNextLine(out newState, execState);
                                     }
@@ -164,7 +270,7 @@ namespace AgentsRebuilt
                                     _stopSleeping = false;
                                     if (isLine)
                                     {
-                                        if (isFirstLine || ast == null || execState == ExecutionState.Moving || execState==ExecutionState.Switching)
+                                        if (isFirstLine || ast == null || execState == ExecutionState.Moving || execState == ExecutionState.Switching)
                                         {
                                             if (execState == ExecutionState.Moving && _move_to != _logProcessor.GetAgentStartStep(_currentAgent))
                                             {
@@ -178,7 +284,7 @@ namespace AgentsRebuilt
                                             else
                                             {
                                                 ast = new AgentState();
-                                                StateObjectMapper.UpdateState(newState, ast, _agentDataDictionary, dsc);   
+                                                StateObjectMapper.UpdateState(newState, ast, _agentDataDictionary, dsc);
                                             }
 
 
@@ -190,7 +296,18 @@ namespace AgentsRebuilt
                                                 visualAgentsPane = ast.AllAgents;
                                                 visualItemsPane = ast.AllItems;
 
-                                                tradeLog = new ObservableCollection<string>() {};
+                                                if (execState == ExecutionState.Switching)
+                                                {
+                                                    SolidColorBrush b = new SolidColorBrush(ColorAndIconAssigner.GetOrAssignBackgroundColorById(_currentAgent));
+
+                                                    AgentsList.Background = b;
+                                                    Grid1.Background = b;
+                                                    TradeChannel.Background = b;
+                                                    ClockList.Background = b;
+                                                    ClockListNames.Background = b;
+                                                }
+
+                                                tradeLog = new ObservableCollection<string>() { };
 
                                                 AgentsList.DataContext = visualAgents;
                                                 AuctionsList.DataContext = visualAuctions;
@@ -201,10 +318,14 @@ namespace AgentsRebuilt
                                                 //ast.Clock.StepNo = _logProcessor.Index;
                                                 ClockList.DataContext = ast.Clock.TextList;
                                                 ClockListNames.DataContext = ast.Clock.TextListNames;
-                                                MainSlider.Maximum = _logProcessor.GetNumber-1;
-                                                MainSlider.Value = _logProcessor.Index-1;
+                                                //AuctionsLabel.Header = AgentDataDictionary.GetSpecialItemGroupName();
+
+                                                MainSlider.Maximum = _logProcessor.GetNumber - 1;
+                                                MainSlider.Value = _logProcessor.Index - 1;
                                                 UpdateSliderMarks(dsc, _logProcessor.GetNumber);
-                                                LineNumberToCoordinateConverter.FieldCount = _logProcessor.GetNumber;
+                                                //LineNumberToCoordinateConverter.FieldCount = _logProcessor.GetNumber;
+                                                //LineNumberToCoordinateConverter.FieldDuration =
+                                                //    _logProcessor.GetTimeByState(_logProcessor.GetNumber - 1);
 
                                                 if (_currentAgent != "god")
                                                 {
@@ -238,7 +359,7 @@ namespace AgentsRebuilt
                                         */
                                             });
                                             isFirstLine = false;
-                                            if (execState == ExecutionState.Moving || execState == ExecutionState.Switching) 
+                                            if (execState == ExecutionState.Moving || execState == ExecutionState.Switching)
                                                 execState = _previousState;
                                         }
                                         else
@@ -247,8 +368,8 @@ namespace AgentsRebuilt
                                             dsc.Invoke(() =>
                                             {
                                                 //ast.Clock.StepNo = _logProcessor.Index;
-                                                MainSlider.Value = _logProcessor.Index-1;
-                                                MainSlider.Maximum = _logProcessor.GetNumber-1;
+                                                MainSlider.Value = _logProcessor.Index - 1;
+                                                MainSlider.Maximum = _logProcessor.GetNumber - 1;
                                                 if (tradeLog == null) tradeLog = new ObservableCollection<string>();
                                                 if (ast.Event != null && ast.Event.Message != "")
                                                     tradeLog.Add(ast.Event.Message);
@@ -269,8 +390,10 @@ namespace AgentsRebuilt
                                     {
                                         _logProcessor.InitOrReread(Config.HistPath, _agentDataDictionary, Dispatcher, _currentAgent);
                                         LineNumberToCoordinateConverter.FieldCount = _logProcessor.GetNumber;
+                                        LineNumberToCoordinateConverter.FieldDuration =
+                                                    _logProcessor.GetTimeByState(_logProcessor.GetNumber - 1);
                                         UpdateSliderMarks(dsc, _logProcessor.GetNumber);
-                                                
+
 
                                     }
                                 }
@@ -330,7 +453,7 @@ namespace AgentsRebuilt
                             int delay;
                             if (!_is_actual)
                             {
-                                delay = (int) (_statePeriod*1000);
+                                delay = (int)(_statePeriod * 1000);
                             }
                             else
                             {
@@ -339,9 +462,9 @@ namespace AgentsRebuilt
                                 if (ast != null && ast.Clock != null && Double.TryParse(ast.Clock.TimeStampH.Replace(".", ","), out i1)
                                     && Double.TryParse(ast.Clock.TimeStampE.Replace(".", ","), out i2))
                                 {
-                                    delay = (int) ((i2 - i1)*1000);
+                                    delay = (int)((i2 - i1) * 1000);
                                 }
-                                else 
+                                else
                                 {
                                     delay = 100; // very short for test purposes -- would be seen easily -- and it shouldn't ever fire
                                 }
@@ -349,17 +472,17 @@ namespace AgentsRebuilt
 
                             while (delay > 0 && !_stopSleeping)
                             {
-                                if (delay >= 1000)
+                                if (delay >= 100)
                                 {
-                                    Thread.Sleep(1000);
+                                    Thread.Sleep(100);
                                 }
                                 else
                                 {
-                                    Thread.Sleep(delay);    
+                                    Thread.Sleep(delay);
                                 }
-                                delay -= 1000;
+                                delay -= 100;
                             }
-                            
+
                         }
 
 
@@ -372,8 +495,20 @@ namespace AgentsRebuilt
                 }
                 catch
                 {
-                    System.Windows.MessageBox.Show("Configuration file error: " + Config.HistPath + " cannot be found");
+                    System.Windows.MessageBox.Show("Something wrong with configuration in "+ Config.ConfigPath);
                 }
+            }
+            else
+            {
+                System.Windows.MessageBox.Show("Configuration file error: " + Config.HistPath + " cannot be found");
+                this.Dispatcher.Invoke(() =>
+                {
+                    ConfigButton.IsEnabled = true;
+                    RunButton.IsEnabled = true;
+                    StatusLabel.Foreground = new SolidColorBrush(Colors.Red);
+                    StatusLabel.Content = "Error in configuration file";
+                });
+            }
         }
 
         private void UpdateSliderMarks(Dispatcher dsc, int number)
@@ -418,11 +553,15 @@ namespace AgentsRebuilt
 
         private void OnRun(object sender, RoutedEventArgs e)
         {
+            
             if (execState == ExecutionState.Void || execState == ExecutionState.Stopped)
             {
                 bool result;
                 Config = CfgSettings.LoadFromFile(Config.ConfigPath, out result);
-                if (!result) System.Windows.MessageBox.Show("Something wrong with config file content");
+                if (!result || !File.Exists(Config.HistPath) || !File.Exists(Config.DammagePath))
+                {
+                    System.Windows.MessageBox.Show("Something wrong with config file content");
+                }
                 else
                 {
                     execState = ExecutionState.Running;
@@ -575,7 +714,7 @@ namespace AgentsRebuilt
             bool _readCfg = false;
 
             Config = CfgSettings.LoadFromFile(rawpath, out _readCfg);
-            Window frm2 = new CfgWindow(Config);
+            Window frm2 = new CfgWindow(Config, this);
             frm2.Show();
         }
 
@@ -614,8 +753,31 @@ namespace AgentsRebuilt
                 //System.Windows.MessageBox.Show("Illegal step number");
                 return;
             }
-                                 
-            Move(tp);
+
+            bool isChecked = StateRadio.IsChecked != null && (bool)StateRadio.IsChecked;
+
+            if (!isChecked)
+            {
+                int hh;
+                if (_logProcessor.GetStateByTime(tp, out hh))
+                {
+                    Move(hh);
+                }
+                else
+                {
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        StatusLabel.Foreground = new SolidColorBrush(Colors.Red);
+                        StatusLabel.Content = "Illegal time!";
+                        _statusTime = DateTime.Now;
+                    });
+
+                }
+            }
+            else
+            {
+                Move(tp);
+            }
             _stopSleeping = true;
         }
 
@@ -755,7 +917,16 @@ namespace AgentsRebuilt
             Agent tp = (Agent)item.DataContext;
             if (Keyboard.Modifiers.ToString().Contains("Control"))
             {
-                if (_logProcessor.IsAgentLogAvailable(tp.ID))
+                if (tp.ID == _currentAgent)
+                {
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        StatusLabel.Foreground = new SolidColorBrush(Colors.Red);
+                        StatusLabel.Content = "This is actually the current agent.";
+                        _statusTime = DateTime.Now;
+                    });
+                }
+                else if (_logProcessor.IsAgentLogAvailable(tp.ID))
                 {
                     _currentAgent = tp.ID;
                     _logProcessor.CurrentAgent = _currentAgent;
@@ -818,7 +989,10 @@ namespace AgentsRebuilt
             int tp;
             bool t = Int32.TryParse(text, out tp);
 
-            if (!LineNumber.Text.Equals("0") && !LineNumber.Text.Equals("") && (tp >= 0 && tp < _logProcessor.GetNumber))
+            bool isChecked = StateRadio.IsChecked != null && (bool) StateRadio.IsChecked;
+
+            bool notTooBig = isChecked ? tp < _logProcessor.GetNumber : tp < _logProcessor.GetTimeByState(_logProcessor.GetNumber-1);
+            if (!LineNumber.Text.Equals("0") && !LineNumber.Text.Equals("") && (tp >= 0 && notTooBig))
             {
                  {
                     this.Dispatcher.Invoke(() =>
@@ -856,6 +1030,24 @@ namespace AgentsRebuilt
                 Agent tp = (Agent)item.DataContext;
                 Move(tp.LastStep);
             }
+        }
+
+        public void Reload(CfgSettings cfg)
+        {
+            LoadAndSetup(cfg);
+        }
+
+        private void OnAdmin(object sender, RoutedEventArgs e)
+        {
+
+            SimulationConsoleWindow console = new SimulationConsoleWindow(_strWriter, this);
+            console.Show();
+        }
+
+        public void ShutdownAdmin()
+        {
+            AdminButton.Visibility = Visibility.Collapsed;
+            _hasAdministratorPrivilleges = false;
         }
     }
 }

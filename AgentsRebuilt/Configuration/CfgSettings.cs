@@ -17,16 +17,17 @@ namespace AgentsRebuilt
         public String HistPath;
         public String ConfigPath;
         public List<CfgStr> TextList;
-
+        public bool AdminRights = false;
     
         public CfgSettings()
         {
         }
 
-        public CfgSettings(String _histPath, String _dmgPath, String filename)
+        public CfgSettings(String _histPath, String _dmgPath, bool _adminRights, String filename)
         {
             HistPath = _histPath;
             DammagePath = _dmgPath;
+            AdminRights = _adminRights;
             ConfigPath = filename;
             TextList = new List<CfgStr>() { new CfgStr("Log file path: " + _histPath), new CfgStr("Dammage folder path: " + _dmgPath) };
         }
@@ -34,6 +35,7 @@ namespace AgentsRebuilt
         public static CfgSettings LoadFromFile(String filename, out bool success)
         {
             String histPath, dmgPath;
+            bool adminRights;
             XmlDocument xmlDoc;
             
             try
@@ -43,9 +45,10 @@ namespace AgentsRebuilt
 
                 histPath = xmlDoc.GetElementById("HistPath").InnerText;
                 dmgPath = xmlDoc.GetElementById("DmgPath").InnerText;
+                adminRights = Boolean.Parse(xmlDoc.GetElementById("AdminRights").InnerText);
 
                 success = true;
-                return new CfgSettings(histPath, dmgPath, filename);
+                return new CfgSettings(histPath, dmgPath, adminRights, filename);
 
             }
             catch(Exception)
@@ -64,6 +67,7 @@ namespace AgentsRebuilt
                 xmlDoc.Load(cfg.ConfigPath);
                 xmlDoc.GetElementById("HistPath").InnerText = cfg.HistPath;
                 xmlDoc.GetElementById("DmgPath").InnerText = cfg.DammagePath;
+                xmlDoc.GetElementById("AdminRights").InnerText = cfg.AdminRights.ToString();
                 xmlDoc.Save(cfg.ConfigPath);
                 WritePathToFile("path_to_config.txt", cfg.ConfigPath);
             }

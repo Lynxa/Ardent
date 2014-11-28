@@ -24,6 +24,7 @@ namespace AgentsRebuilt
         private static List<KVP> _agentDataList = new List<KVP>();
         private static List<KVP> _itemDataList = new List<KVP>();
         private static List<String> _specialList = new List<string>();
+        private static String _specialGroupName="";
 
         public AgentDataDictionary(CfgSettings cfg)
         {
@@ -31,7 +32,8 @@ namespace AgentsRebuilt
             String tpath = cfg.DammagePath;
             _agentDataList = LogProcessor.GetAgentData(tpath);
             _itemDataList = LogProcessor.GetItemData(tpath);
-            _specialList = LogProcessor.GetSpecialData(tpath);
+            LogProcessor.GetSpecialData(tpath, out _specialList, out _specialGroupName);
+            
             conf = cfg;
         }
 
@@ -98,21 +100,25 @@ namespace AgentsRebuilt
         public ImageSource GetItemSourceByID(String id)
         {
             String def = "", result = "";
+            int longestMatch = 0;
+
             foreach (var kvp in _itemDataList)
             {
-                if (kvp.Key == id)
+                if (id.StartsWith(kvp.Key))
                 {
-                    result = kvp.Value.Remove(0, 1);
-                    result = result.Remove(result.Length - 1, 1);
+                    if (kvp.Key.Length > longestMatch)
+                    {
+                        result = kvp.Value.Substring(1, kvp.Value.Length - 2);
+                        longestMatch = kvp.Key.Length;
+                    }
                 }
 
                 if (kvp.Key == "default")
                 {
-                    def = kvp.Value.Remove(0, 1);
-                    def = def.Remove(def.Length - 1, 1);
+                    def = kvp.Value.Substring(1, kvp.Value.Length-2);
                 }
             }
-            if (!result.Equals("")) result = Path.Combine(Path.GetDirectoryName(conf.DammagePath), result);
+            if (!result.Equals("") && Path.GetDirectoryName(conf.DammagePath)!=null) result = Path.Combine(Path.GetDirectoryName(conf.DammagePath), result);
             if (File.Exists(result)) return new BitmapImage(new Uri(result));
 
             if (!def.Equals("")) def = Path.Combine(Path.GetDirectoryName(conf.DammagePath), def);
@@ -163,6 +169,12 @@ namespace AgentsRebuilt
 
 
         }
+
+        public static String GetSpecialItemGroupName()
+        {
+            return _specialGroupName;
+        }
+
         internal static class NativeMethods
         {
             [DllImport("gdi32.dll")]

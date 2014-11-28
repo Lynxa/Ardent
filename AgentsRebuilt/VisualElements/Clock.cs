@@ -65,7 +65,7 @@ namespace AgentsRebuilt
             //TextList[2].Content = (_stepNo).ToString();
         }
 
-
+        
         // Convert given string with seconds to foramted string in foramt hh:mm:ss.ms
         private string ToTime(string TimeString)
         {

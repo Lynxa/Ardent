@@ -65,13 +65,15 @@
     <Compile Include="ANcillaryElts\LineNumberToCoordinateConverter.cs" />
     <Compile Include="Configuration\CfgSettings.cs" />
     <Compile Include="Configuration\CfgStr.cs" />
-    <Compile Include="CfgWindow.xaml.cs">
+    <Compile Include="Windows\CfgWindow.xaml.cs">
       <DependentUpon>CfgWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Core\ComplexLog.cs" />
-    <Compile Include="TeStPanel.cs" />
+    <Compile Include="Windows\SimulationConsoleWindow.xaml.cs">
+      <DependentUpon>SimulationConsoleWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="VisualElements\SystemEvent.cs" />
-    <Compile Include="ItemWindow.xaml.cs">
+    <Compile Include="Windows\ItemWindow.xaml.cs">
       <DependentUpon>ItemWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Core\NetworkReader.cs" />
@@ -80,15 +82,15 @@
     <Compile Include="ANcillaryElts\ElementStatus.cs" />
     <Compile Include="Core\StateObjectMapper.cs" />
     <Compile Include="Properties\Annotations.cs" />
-    <Page Include="CfgWindow.xaml">
+    <Page Include="Windows\CfgWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="ItemWindow.xaml">
+    <Page Include="Windows\ItemWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MainWindow.xaml">
+    <Page Include="Windows\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -102,10 +104,14 @@
     <Compile Include="ANcillaryElts\KVP.cs" />
     <Compile Include="VisualElements\Clock.cs" />
     <Compile Include="Core\LogProcessor.cs" />
-    <Compile Include="MainWindow.xaml.cs">
+    <Compile Include="Windows\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Windows\SimulationConsoleWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -128,7 +134,6 @@
     <Content Include="7LED.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Include="ClassDiagram1.cd" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

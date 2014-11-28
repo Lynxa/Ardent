@@ -24,11 +24,14 @@ namespace AgentsRebuilt
     {
         private CfgSettings config;
         private String path;
+        private MainWindow _window;
 
-        public CfgWindow(CfgSettings cfg) : base()
+        public CfgWindow(CfgSettings cfg, MainWindow window) : base()
         {
             InitializeComponent();
             config = cfg;
+            _window = window;
+
             if (cfg != null)
             {
                 path = config.ConfigPath;
@@ -87,6 +90,7 @@ namespace AgentsRebuilt
                 config.DammagePath = TextBox3.Text;
                 config.SetTextList();
                 CfgSettings.WriteToFile(config);
+                _window.Reload(config);
             }
             catch (Exception e2)
             {
