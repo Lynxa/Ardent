@@ -104,7 +104,12 @@ namespace AgentsRebuilt
             result.Source = Source;
             result.LastStep = LastStep;
             result.FirstStep = FirstStep;
-            
+            result.IsExpanded = IsExpanded;
+            result.IsPaneExpanded = IsPaneExpanded;
+            result.IsPresent = IsPresent;
+            result.Minimized = Minimized;
+            result.Account = Account;
+
             return result;
         }
 

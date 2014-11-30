@@ -67,7 +67,8 @@ namespace AgentsRebuilt
             result.ImageDictionary = ImageDictionary;
             result.InstanceOf = InstanceOf;
             result.Type = this.Type;
-
+            result.Background = Background;
+            result.BorderBrush = BorderBrush;
             return result;
         }
 

@@ -77,6 +77,7 @@ namespace AgentsRebuilt
             {
                 if (!agt.Key.StartsWith("_"))
                 {
+                    Agent malagent = new Agent(agt.Key, agt.Value, _agentDataDictionary, uiThread);
                     agList.Add(new Agent(agt.Key, agt.Value, _agentDataDictionary, uiThread));
                 }
                 else
@@ -133,7 +134,7 @@ namespace AgentsRebuilt
             
             UpdateCommons(oldState.AllItems, newState.AllItems, uiThread);
 
-            UpdateStep(oldState.AllAgents, newState.AllAgents, uiThread);
+            UpdateStepAddOnly(oldState.AllAgents, newState.AllAgents, uiThread);
            
             foreach (var ag in oldState.AllAgents)
             {
@@ -285,6 +286,36 @@ namespace AgentsRebuilt
             }
 
             foreach (var agent in newAgents)
+            {
+                if (!ContainsAgent(oldAgents, agent.ID))
+                {
+                    Agent agent1 = agent;
+                    uiThread.Invoke(() =>
+                    {
+                        oldAgents.Add(agent1);
+                        agent1.Status = ElementStatus.New;
+                    });
+                }
+            }
+        }
+
+        private static void UpdateStepAddOnly(ObservableCollection<Agent> oldAgents, ObservableCollection<Agent> newAgents, Dispatcher uiThread)
+        {
+            var AgentsToExecute = new List<Agent>();
+            foreach (var agn in oldAgents)
+            {
+
+                Agent newA = GetAgentByID(newAgents, agn.ID);
+                if (newA == null)
+                {
+                    agn.Status = ElementStatus.Deleted;
+                }
+                else
+                {
+                    UpdateAgentItems(agn, newA, uiThread);
+                }
+            }
+             foreach (var agent in newAgents)
             {
                 if (!ContainsAgent(oldAgents, agent.ID))
                 {

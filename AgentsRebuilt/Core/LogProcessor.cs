@@ -311,53 +311,6 @@ namespace AgentsRebuilt
             }
 
             
-
-
-            if (sTate != null)
-            {
-                //foreach (var agentStep in _agentSteps)
-                //{
-                //    if (StateObjectMapper.ContainsAgent(sTate.Agents, agentStep.Key))
-                //    {
-                //        if (agentStep.Value.EndStep < Index)
-                //            agentStep.Value.EndStep = Index;
-                //    }
-                //}
-
-                foreach (var ag in sTate.AllAgents)
-                {
-                    if (!StateObjectMapper.ContainsAgent(sTate.Agents, ag.ID))
-                    {
-                        ag.Status = ElementStatus.Deleted;
-                    }
-                    else
-                    {
-                        ag.Status = ElementStatus.Unchanged;
-                    }
-
-                    //if (StateObjectMapper.ContainsAgent(sTate.Agents, ag.ID))
-                    //{
-                    //    ag.LastStep = GetAgentEndStep(ag.ID);
-                    //}
-                }
-
-                //foreach (var ag in sTate.Agents)
-                //{
-                //    foreach (var itm in sTate.AllItems)
-                //    {
-                //        if (!StateObjectMapper.ContainsItem(ag.Items, itm.Key))
-                //        {
-                //            itm.Status = ElementStatus.Deleted;
-                //        }
-                //        else
-                //        {
-                //            itm.Status = ElementStatus.Unchanged;
-                //        }
-                //    }
-                //}
-
-
-            }
             result = sTate;
             return (sTate!=null);
         }
