@@ -32,6 +32,15 @@ namespace AgentsRebuilt
             main = window;
             ConsoleLog.DataContext = log;
             this.sw = sw;
+            if (this.Title.StartsWith("Admin"))
+            {
+                log.Add("Connected to communication module.");
+                log.Add("Please, enter a message:");
+            }
+            else
+            {
+                log.Add("Connected to simulation");
+            }
         }
 
         private void OnEnter(object sender, RoutedEventArgs e)
@@ -49,15 +58,18 @@ namespace AgentsRebuilt
                 sw.Flush();
                 log.Add(command);
 
-                if (CommandBox.Text.Equals("shutdown"))
+                if (this.Title.StartsWith("Admin"))
                 {
-                    log.Add("Shutting down...");
-                    main.ShutdownAdmin();
-                    this.Close();
-                }
-                else
-                {
-                    CommandBox.Text = "";
+                    if (CommandBox.Text.Equals("shutdown"))
+                    {
+                        log.Add("Shutting down...");
+                        main.ShutdownAdmin();
+                        this.Close();
+                    }
+                    else
+                    {
+                        CommandBox.Text = "";
+                    }
                 }
 
             }

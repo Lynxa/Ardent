@@ -3,10 +3,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MultiAgentz Visualisation" Height="909.537" Width="1400.254"
         xmlns:mylocalXAMLnamespace="clr-namespace:AgentsRebuilt"
-        xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase">
+        xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase" Loaded="OnMainLoad">
 
     <Window.Resources>
         <mylocalXAMLnamespace:LineNumberToCoordinateConverter x:Key="Converter"/>
+        <mylocalXAMLnamespace:MinusOneConverter x:Key="MinusOneConverter"/>
+        <mylocalXAMLnamespace:CheckToColorConverter x:Key="CheckToColorConverter"/>
         <mylocalXAMLnamespace:ItemTemplateSelector x:Key="ItemTemplateSelector1" />
 
 
@@ -116,7 +118,7 @@
                             <RowDefinition Height="52"></RowDefinition>
                             <RowDefinition Height="*"></RowDefinition>
                         </Grid.RowDefinitions>
-                        <Border Grid.RowSpan="2" BorderThickness="2" BorderBrush="LightSlateGray" Background="White" />
+                        <Border Grid.RowSpan="2" BorderThickness="2" Background="{Binding Path=Background, UpdateSourceTrigger=PropertyChanged}" BorderBrush="LightSlateGray" />
                         <WrapPanel Grid.Row="0">
                             <Image 
                             Source="{Binding Path=Source}"
@@ -656,8 +658,8 @@
                 Value="3"/>
         <Label Content="State change&#x0a;period (sec):" HorizontalAlignment="Left" Margin="605,69,0,0" Grid.Row="2" VerticalAlignment="Top"/>
         <CheckBox Name="ChkBox" Content="CheckBox" HorizontalAlignment="Left" Height="18" Margin="1139,20,0,0" Grid.Row="2" VerticalAlignment="Top" Width="13" Visibility="Collapsed"/>
-        <Button x:Name="ConfigButton" ToolTip="Change the visualisation configuration" HorizontalAlignment="Left" Height="35" Margin="883,69,0,0" Grid.Row="2" Click="OnConfig" VerticalAlignment="Top" Width="83" RenderTransformOrigin="0.821,0.2" Content="_Config"/>
-        <Button x:Name="ExitButton" ToolTip="Close the application" HorizontalAlignment="Left" Height="35" Margin="1095,69,0,0" Grid.Row="2" Click="OnExit" VerticalAlignment="Top" Width="83" RenderTransformOrigin="0.821,0.2" Content="_Exit"/>
+        <Button x:Name="ConfigButton" ToolTip="Change the visualisation configuration" HorizontalAlignment="Left" Height="35" Margin="935,70,0,0" Grid.Row="2" Click="OnConfig" VerticalAlignment="Top" Width="66" RenderTransformOrigin="0.821,0.2" Content="_Config"/>
+        <Button x:Name="ExitButton" ToolTip="Close the application" HorizontalAlignment="Left" Height="35" Margin="1099,70,0,0" Grid.Row="2" Click="OnExit" VerticalAlignment="Top" Width="68" RenderTransformOrigin="0.821,0.2" Content="_Exit"/>
         <Button x:Name="GoButton" ToolTip="Move to the execState with indicated number" HorizontalAlignment="Left" Height="35" Margin="463,69,0,0" Grid.Row="2" Click="Go" VerticalAlignment="Top" Width="67" RenderTransformOrigin="0.821,0.2" Content="_Go"/>
         <!--TextBox  Text="0"  Grid.Column="0" Margin="406,85,941,39" Grid.Row="2"  VerticalAlignment="Top" Width="30" RenderTransformOrigin="0.821,0.2" /-->
         <TextBox x:Name="LineNumber" HorizontalAlignment="Left" Height="26" Margin="407,73,0,0" Grid.Row="2" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="51" TextChanged="LineNumber_TextChanged"/>
@@ -672,7 +674,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <TextBlock Name="IndexBlock" Width="80"  Grid.Column="1" Text="{Binding Path=Index, UpdateSourceTrigger=PropertyChanged}"/>
+            <TextBlock Name="IndexBlock" Width="80"  Grid.Column="1" Text="{Binding Path=Index, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource MinusOneConverter}}"/>
             <TextBlock Width="100" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Right" Height="20" Text="State number:"/>
 
 
@@ -715,9 +717,15 @@
             Converter={StaticResource converter}}"</-->
             </Rectangle.RenderTransform>
         </Rectangle>
-        <RadioButton GroupName="StateTimeSwitcher" Name="StateRadio" Content="State" IsChecked="True"  HorizontalAlignment="Left" Margin="354,69,0,0" Grid.Row="2" VerticalAlignment="Top"/>
+        <RadioButton GroupName="StateTimeSwitcher" Name="StateRadio" Content="State" IsChecked="True"  HorizontalAlignment="Left" Margin="354,69,0,0" Grid.Row="2" VerticalAlignment="Top" Checked="StateRadio_Checked" Unchecked="StateRadio_Unchecked"/>
         <RadioButton GroupName="StateTimeSwitcher" Content="Time" IsChecked="False" HorizontalAlignment="Left" Margin="354,84,0,0" Grid.Row="2" VerticalAlignment="Top"/>
-        <Button x:Name="AdminButton" ToolTip="Administration console" HorizontalAlignment="Left" Height="35" Margin="981,69,0,0" Grid.Row="2" Click="OnAdmin" VerticalAlignment="Top" Width="83" RenderTransformOrigin="0.821,0.2" Content="_Admin" Visibility="Collapsed"/>
+        <Button x:Name="AdminButton" ToolTip="Administration console" HorizontalAlignment="Left" Height="35" Margin="853,70,0,0" Grid.Row="2" Click="OnAdmin" VerticalAlignment="Top" Width="68" RenderTransformOrigin="0.821,0.2" Content="_Admin" Visibility="Collapsed"/>
+        <Button x:Name="AgentButton" ToolTip="Change the visualisation configuration" HorizontalAlignment="Left" Height="35" Margin="1016,70,0,0" Grid.Row="2" Click="OnAgent" VerticalAlignment="Top" Width="66" RenderTransformOrigin="0.821,0.2" >
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                <TextBlock Text="Connect" />
+                <TextBlock Text="as Agent" />
+            </StackPanel>
+        </Button>
 
     </Grid>
 </Window>

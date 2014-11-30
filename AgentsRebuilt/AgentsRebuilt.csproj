@@ -65,6 +65,8 @@
     <Compile Include="ANcillaryElts\LineNumberToCoordinateConverter.cs" />
     <Compile Include="Configuration\CfgSettings.cs" />
     <Compile Include="Configuration\CfgStr.cs" />
+    <Compile Include="ANcillaryElts\MinusOneConverter.cs" />
+    <Compile Include="ANcillaryElts\CheckToColorConverter.cs" />
     <Compile Include="Windows\CfgWindow.xaml.cs">
       <DependentUpon>CfgWindow.xaml</DependentUpon>
     </Compile>

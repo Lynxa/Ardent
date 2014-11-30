@@ -6,12 +6,23 @@ namespace AgentsRebuilt
 {
     class SystemEvent
     {
-        private String Timestamp = "";
-        private String _message = "";
+        private readonly String _timestamp = "";
+        private readonly String _message = "";
+
+        public SystemEvent GetFullCopy()
+        {
+            return new SystemEvent(_timestamp, _message);
+        }
 
         public String Message
         {
-            get { return Timestamp + ": " + _message; }
+            get { return _timestamp + ": " + _message; }
+        }
+
+        public SystemEvent(String time, String msg)
+        {
+            this._timestamp = time;
+            this._message = msg;
         }
 
         public SystemEvent(KVP kvp, AgentDataDictionary ag) 
@@ -112,7 +123,7 @@ namespace AgentsRebuilt
                 }
                 if (k.Key == "happened_at")
                 {
-                    Timestamp = (k.Value.Contains('.')) ? k.Value.Substring(0, k.Value.LastIndexOf('.') + 2) : k.Value;
+                    _timestamp = (k.Value.Contains('.')) ? k.Value.Substring(0, k.Value.LastIndexOf('.') + 2) : k.Value;
                 }
             }
         }

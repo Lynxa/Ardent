@@ -53,6 +53,20 @@ namespace AgentsRebuilt
             result.Status = ElementStatus.Unchanged;
             result.ImageDictionary = ImageDictionary;
             result.InstanceOf = InstanceOf;
+            result.Type = this.Type;
+
+            return result;
+        }
+
+        public Item GetFullCopy()
+        {
+            var result = new Item(Key, ListOfItems, cfgSettings, ImageDictionary, UIDispatcher);
+            result.StringAttributeList = new Dictionary<string, string>();
+
+            result.Status = Status;
+            result.ImageDictionary = ImageDictionary;
+            result.InstanceOf = InstanceOf;
+            result.Type = this.Type;
 
             return result;
         }

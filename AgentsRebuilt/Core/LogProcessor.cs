@@ -28,7 +28,7 @@ namespace AgentsRebuilt
         private Dictionary<int, String> _stateToTimeStampDictionary = new Dictionary<int, String>();
         private Dictionary<int, int> _stateToTimeSecsDictionary = new Dictionary<int, int>();
 
-        private Dictionary<String, Duo> _agentSteps = new Dictionary<string, Duo>();
+        private static Dictionary<String, Duo> _agentSteps = new Dictionary<string, Duo>();
         
 
         private String _currentAgent ;
@@ -49,6 +49,10 @@ namespace AgentsRebuilt
             }
         }
 
+        public int IndexMinus
+        {
+            get { return _index-1; }
+        }
         
         public int GetNumber
         {
@@ -200,7 +204,7 @@ namespace AgentsRebuilt
                             {
                                 int tStep;
                                 _stateTimeStampDictionary.TryGetValue(tst2.Clock.HappenedAt, out tStep);
-                                tst2.Clock.StepNo = tStep;
+                                tst2.Clock. StepNo = tStep;
                                 _states.Add(tst2, ag);
                                 foreach (var ag1 in tst2.Agents)
                                 {
@@ -258,14 +262,20 @@ namespace AgentsRebuilt
         public bool GetNextLine(out AgentState result, ExecutionState execState)
         {
             AgentState sTate = null;
+            if (_states.Count == 0)
+            {
+                result = null;
+                return false;
+            }
+
             int start = GetAgentStartStep(_currentAgent);
             int end = GetAgentEndStep(_currentAgent);
 
             if (execState == ExecutionState.Running )
             {
-                if (end >= Index)
+                if (end >= Index )
                 {
-                    sTate = _states[_currentAgent,Index];
+                    sTate = _states[_currentAgent,Index].GetFullCopy(); //Vik-deletedItemsBug
                     Index++;
                     _latency--;
                 }
@@ -275,15 +285,15 @@ namespace AgentsRebuilt
                
                 if (Index==start && end >= start)
                 {
-                    sTate = _states[_currentAgent, Index];
+                    sTate = _states[_currentAgent, Index].GetFullCopy(); //Vik-deletedItemsBug
                     Index++;
                     _latency--;
                 }
                 else if (end >= Index && Index > start)
                 {
                     sTate = new AgentState();
-                    var sTate1 = _states[_currentAgent, Index-1];
-                    var state2 = _states[_currentAgent, Index];
+                    var sTate1 = _states[_currentAgent, Index - 1].GetFullCopy(); //Vik-deletedItemsBug
+                    var state2 = _states[_currentAgent, Index].GetFullCopy(); //Vik-deletedItemsBug
                     StateObjectMapper.UpdateState(sTate1, sTate, _dataDictionary, _mainDispatcher);
                     StateObjectMapper.UpdateState(state2, sTate, _dataDictionary, _mainDispatcher);
                     Index++;
@@ -295,12 +305,25 @@ namespace AgentsRebuilt
             {
                 if (end >= Index && _latency <= (end - Index))
                 {
-                    sTate = _states[_currentAgent, Index];
+                    sTate = _states[_currentAgent, Index].GetFullCopy(); //Vik-deletedItemsBug
                     Index++;
                 }
             }
+
+            
+
+
             if (sTate != null)
             {
+                //foreach (var agentStep in _agentSteps)
+                //{
+                //    if (StateObjectMapper.ContainsAgent(sTate.Agents, agentStep.Key))
+                //    {
+                //        if (agentStep.Value.EndStep < Index)
+                //            agentStep.Value.EndStep = Index;
+                //    }
+                //}
+
                 foreach (var ag in sTate.AllAgents)
                 {
                     if (!StateObjectMapper.ContainsAgent(sTate.Agents, ag.ID))
@@ -311,7 +334,29 @@ namespace AgentsRebuilt
                     {
                         ag.Status = ElementStatus.Unchanged;
                     }
+
+                    //if (StateObjectMapper.ContainsAgent(sTate.Agents, ag.ID))
+                    //{
+                    //    ag.LastStep = GetAgentEndStep(ag.ID);
+                    //}
                 }
+
+                //foreach (var ag in sTate.Agents)
+                //{
+                //    foreach (var itm in sTate.AllItems)
+                //    {
+                //        if (!StateObjectMapper.ContainsItem(ag.Items, itm.Key))
+                //        {
+                //            itm.Status = ElementStatus.Deleted;
+                //        }
+                //        else
+                //        {
+                //            itm.Status = ElementStatus.Unchanged;
+                //        }
+                //    }
+                //}
+
+
             }
             result = sTate;
             return (sTate!=null);
@@ -322,7 +367,7 @@ namespace AgentsRebuilt
             AgentState sTate = null;
             if (_states.Count > Index && Index > 0)
             {
-                sTate = _states[_currentAgent, Index-1];
+                sTate = _states[_currentAgent, Index - 1].GetFullCopy(); //Vik-deletedItemsBug
             }
 
 
@@ -335,7 +380,7 @@ namespace AgentsRebuilt
             AgentState sTate = null;
             if (_states.Count > 0)
             {
-                sTate = _states[_currentAgent, 0]; //TODO REFACTORING FOR AGENT VIEW
+                sTate = _states[_currentAgent, 0].GetFullCopy(); //Vik-deletedItemsBug; //TODO REFACTORING FOR AGENT VIEW
             }
             Index = 0;
             result = sTate;
@@ -345,7 +390,7 @@ namespace AgentsRebuilt
         public bool GetLastLine(out AgentState result)
         {
             Index = _states.Count - 1;
-            var sTate = _states[_currentAgent, Index];
+            var sTate = _states[_currentAgent, Index].GetFullCopy(); //Vik-deletedItemsBug
             result = sTate;
             return (sTate != null);
         }
@@ -483,7 +528,7 @@ namespace AgentsRebuilt
             return 0;
         }
 
-        public int GetAgentEndStep(String id)
+        public static int GetAgentEndStep(String id)
         {
             Duo tb;
             if (_agentSteps.TryGetValue(id, out tb))

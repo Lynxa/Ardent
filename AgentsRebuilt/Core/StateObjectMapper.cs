@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media.Media3D;
 using System.Windows.Threading;
 
 
@@ -13,6 +14,7 @@ namespace AgentsRebuilt
 {
     static class StateObjectMapper
     {
+
         public static AgentState MapState(KVP root, AgentDataDictionary _agentDataDictionary, Dispatcher uiThread)
         {
             ObservableCollection<Agent> agList = new ObservableCollection <Agent>();
@@ -126,20 +128,53 @@ namespace AgentsRebuilt
             UpdateAuctions(oldState.Auctions, newState.Auctions, uiThread);
             UpdateCommons(oldState.CommonRights, newState.CommonRights, uiThread);
             UpdateStep(oldState.Agents, newState.Agents, uiThread);
-            oldState.AllAgents = newState.AllAgents;
-            oldState.AllItems = newState.AllItems;
+            //oldState.AllAgents = newState.AllAgents;
+            //oldState.AllItems = newState.AllItems;
+            
+            UpdateCommons(oldState.AllItems, newState.AllItems, uiThread);
+
+            UpdateStep(oldState.AllAgents, newState.AllAgents, uiThread);
+           
             foreach (var ag in oldState.AllAgents)
             {
-                if (!StateObjectMapper.ContainsAgent(oldState.Agents, ag.ID))
-                {
-                    ag.Status = ElementStatus.Deleted;
-                }
-                else
-                {
-                    ag.Status = ElementStatus.Unchanged;
-                }
+             
+                    if (!StateObjectMapper.ContainsAgent(oldState.Agents, ag.ID))
+                    {
+                        ag.Status = ElementStatus.Deleted;
+                    }
+                    else
+                    {
+                        ag.Status = ElementStatus.Unchanged;
+                    }
+
+                    if (StateObjectMapper.ContainsAgent(oldState.Agents, ag.ID))
+                    {
+                        ag.LastStep = LogProcessor.GetAgentEndStep(ag.ID);
+                    }
+                
             }
             
+
+            foreach (var itm in oldState.AllItems)
+            {
+                bool found = false;
+                foreach (var ag in oldState.Agents)
+                {
+                    if (StateObjectMapper.ContainsItem(ag.Items, itm.Key))
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+                
+                itm.Status = found?ElementStatus.Unchanged:ElementStatus.Deleted;
+
+            }
+        }
+
+        private static void UpdateLeavesAt(ObservableCollection<Agent> agentsToUpdate,
+            ObservableCollection<Agent> currentAgents)
+        {
         }
 
         private static void UpdateCommons(ObservableCollection<Item> oldCommons,
@@ -287,7 +322,7 @@ namespace AgentsRebuilt
             return null;
         }
 
-        private static bool ContainsItem(ObservableCollection<Item> lst, String id)
+        public static bool ContainsItem(ObservableCollection<Item> lst, String id)
         {
             foreach (var it in lst)
             {
@@ -366,6 +401,7 @@ namespace AgentsRebuilt
 
             oldAgent.Account = newAgent.Account;
         }
+
 
         private static void UpdateItem(Item oldItem, Item newItem)
         {

@@ -1,13 +1,17 @@
 ﻿<Window x:Class="AgentsRebuilt.SimulationConsoleWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Simulation Console" Height="443" Width="668">
+        Title="Administration Module" Height="443" Width="668">
     <Grid Margin="0,0,0,0">
-        <ScrollViewer HorizontalAlignment="Left" Height="352" Margin="10,10,0,0" VerticalAlignment="Top" Width="640" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="76*"/>
+            <ColumnDefinition Width="89*"/>
+        </Grid.ColumnDefinitions>
+        <ScrollViewer HorizontalAlignment="Left" Height="352" Margin="10,10,0,0" VerticalAlignment="Top" Width="640" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Grid.ColumnSpan="2">
             <ListBox Name="ConsoleLog" HorizontalAlignment="Left" Height="332" VerticalAlignment="Top" Width="620" ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged}"/>
         </ScrollViewer>
-        <TextBox Name="CommandBox" HorizontalAlignment="Left" Height="24" Margin="10,367,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="568"/>
-        <Button Content="Enter" HorizontalAlignment="Left" Height="24" Margin="592,366,0,0" VerticalAlignment="Top" Width="38" IsDefault="True" Click="OnEnter"/>
+        <TextBox Name="CommandBox" HorizontalAlignment="Left" Height="24" Margin="10,367,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="568" Grid.ColumnSpan="2"/>
+        <Button Content="Enter" HorizontalAlignment="Left" Height="24" Margin="288,366,0,0" VerticalAlignment="Top" Width="38" IsDefault="True" Click="OnEnter" Grid.Column="1"/>
 
     </Grid>
 </Window>

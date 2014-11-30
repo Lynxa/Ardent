@@ -16,6 +16,31 @@ namespace AgentsRebuilt
         public String TimeStampH, TimeStampE;
         private int _stepNo = 0;
 
+        public Clock GetFullCopy()
+        {
+            var result = new Clock();
+            result.ExpiredAt = ExpiredAt;
+            result.HappenedAt = HappenedAt;
+            result.TimeStampE = TimeStampE;
+            result.TimeStampH = TimeStampH;
+
+            List<CfgStr> tl = new List<CfgStr>();
+            foreach (var cfgStr in TextList)
+            {
+                tl.Add(new CfgStr(cfgStr.Content));
+            }
+            result.TextList = tl;
+
+            tl = new List<CfgStr>();
+            foreach (var cfgStr in TextListNames)
+            {
+                tl.Add(new CfgStr(cfgStr.Content));
+            }
+            result.TextListNames = tl;
+
+            return result;
+        }
+
         public Clock()
         {
             TextList = new List<CfgStr>() { new CfgStr("0"), new CfgStr("0") };

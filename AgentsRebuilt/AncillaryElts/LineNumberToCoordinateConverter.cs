@@ -34,17 +34,17 @@ namespace AgentsRebuilt
             switch (radio.IsChecked)
             {
                 case true:
-                    if (FieldCount !=-1)
+                    if (FieldCount != 0)
                     {
-                        tp = 1074*tp/(FieldCount+1);
+                        tp = 1064*tp/(FieldCount);
                     }
                     else tp = 0;
                     break;
 
                 case false:
-                    if (FieldDuration != -1)
+                    if (FieldDuration != 0)
                     {
-                        tp = 1074 * tp / (FieldDuration + 1);
+                        tp = 1064 * tp / (FieldDuration);
                     }
                     else tp = 0;
                     break;

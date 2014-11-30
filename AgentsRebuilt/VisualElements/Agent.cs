@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using AgentsRebuilt.Annotations;
 
 namespace AgentsRebuilt
 {
@@ -32,8 +33,32 @@ namespace AgentsRebuilt
 
         //public ImageSource ImageSource;
         public ObservableCollection<Item> Items;
-        
 
+
+
+        public Agent GetFullCopy()
+        {
+            var result = new Agent(ID, new List<KVP>() { }, _imageDictionary, _uiDispatcher);
+            //result.Background = this.Background.CloneCurrentValue();
+            result.IsPresent = IsPresent;
+            result.Status = Status;
+            result.Source = Source.CloneCurrentValue();
+            result.LastStep = LastStep;
+            result.FirstStep = FirstStep;
+            result.IsExpanded = IsExpanded;
+            result.IsPaneExpanded = IsPaneExpanded;
+            result.IsPresent = IsPresent;
+            result.Minimized = Minimized;
+            result.Account = Account;
+
+            ObservableCollection<Item> ti = new ObservableCollection<Item>();
+            foreach (var item in Items)
+            {
+                ti.Add(item.GetFullCopy());
+            }
+            result.Items = ti;
+            return result;
+        }
 
         public Agent(String id, List<KVP> items, AgentDataDictionary iAgentDataDictionary,Dispatcher uiThread)
         {
@@ -68,6 +93,7 @@ namespace AgentsRebuilt
 
             st = ElementStatus.New;
         }
+
 
         public Agent GetNeutralCopy()
         {

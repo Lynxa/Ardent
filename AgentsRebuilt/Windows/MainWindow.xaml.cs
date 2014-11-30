@@ -68,18 +68,20 @@ namespace AgentsRebuilt
 
         private static StreamWriter _strWriter;
 
-        private static bool Connect(String host, int port)
+        private static bool Connect(String host, int port, out StreamWriter outStream)
         {
             try
             {
                 TcpClient _client = new TcpClient();
                 _client.Connect(host, port);
                NetworkStream stream = _client.GetStream();
-                _strWriter = new StreamWriter(stream);
+                outStream = new StreamWriter(stream);
+
                  return true;
             }
             catch (Exception)
             {
+                outStream = null;
                 return false;
             }
         }
@@ -132,15 +134,6 @@ namespace AgentsRebuilt
             LoadAndSetup(Config);
             //AgentDataDictionary = new AgentDataDictionary(@"D:\#Recent_desktop\UNI\PES602\DMG\dammage 1.0\domains\english.pl");
 
-            if (Config.AdminRights)
-            {
-                string name =  Dialog.MyPrompt("Please enter administration password:","Enter password");
-                if (name.Equals("meta") && Connect("localhost", 5100))
-                {
-                    _hasAdministratorPrivilleges = true;
-                    AdminButton.Visibility = Visibility.Visible;
-                }
-            }
         }
 
         public static class Dialog
@@ -195,13 +188,24 @@ namespace AgentsRebuilt
 
                     StatusLabel.Foreground = new SolidColorBrush(Colors.Black);
                     StatusLabel.Content = _currentMessage;
-                    LineNumberToCoordinateConverter.FieldCount = _logProcessor.GetNumber;
+                    if (_logProcessor.GetNumber - 1 > 20)
+                    {
+                        MainSlider.Maximum = (double) _logProcessor.GetNumber - 1;
+                    }
+                    else
+                    {
+                        MainSlider.Maximum = Math.Ceiling((double)(_logProcessor.GetNumber - 1) / 10) * 10;
+                    }
+
+                    LineNumberToCoordinateConverter.FieldCount = (int)MainSlider.Maximum;
                     LineNumberToCoordinateConverter.FieldDuration =
                     _logProcessor.GetTimeByState(_logProcessor.GetNumber - 1);
-                    MainSlider.Maximum = _logProcessor.GetNumber - 1;
+
                     MainSlider.Value = _logProcessor.Index - 1;
+                    UpdateSliderMarks(dsc, (int)MainSlider.Maximum);
                     AuctionsLabel.Header = AgentDataDictionary.GetSpecialItemGroupName();
-                    UpdateSliderMarks(dsc, _logProcessor.GetNumber);
+
+                    //UpdateSliderMarks(dsc, _logProcessor.GetNumber);
 
                 }
                 catch
@@ -320,9 +324,17 @@ namespace AgentsRebuilt
                                                 ClockListNames.DataContext = ast.Clock.TextListNames;
                                                 //AuctionsLabel.Header = AgentDataDictionary.GetSpecialItemGroupName();
 
-                                                MainSlider.Maximum = _logProcessor.GetNumber - 1;
+                                                if (_logProcessor.GetNumber - 1 > 20)
+                                                {
+                                                    MainSlider.Maximum = (double) _logProcessor.GetNumber - 1;
+                                                }
+                                                else
+                                                {
+                                                    MainSlider.Maximum = Math.Ceiling((double) (_logProcessor.GetNumber - 1) / 10) * 10;
+
+                                                }
                                                 MainSlider.Value = _logProcessor.Index - 1;
-                                                UpdateSliderMarks(dsc, _logProcessor.GetNumber);
+                                                UpdateSliderMarks(dsc, (int) MainSlider.Maximum);
                                                 //LineNumberToCoordinateConverter.FieldCount = _logProcessor.GetNumber;
                                                 //LineNumberToCoordinateConverter.FieldDuration =
                                                 //    _logProcessor.GetTimeByState(_logProcessor.GetNumber - 1);
@@ -333,7 +345,7 @@ namespace AgentsRebuilt
                                                     MainSlider.SelectionStart =
                                                         _logProcessor.GetAgentStartStep(_currentAgent);
                                                     MainSlider.SelectionEnd =
-                                                        _logProcessor.GetAgentEndStep(_currentAgent);
+                                                        LogProcessor.GetAgentEndStep(_currentAgent);
                                                 }
                                                 else
                                                 {
@@ -368,8 +380,17 @@ namespace AgentsRebuilt
                                             dsc.Invoke(() =>
                                             {
                                                 //ast.Clock.StepNo = _logProcessor.Index;
+                                                if (_logProcessor.GetNumber - 1 > 20)
+                                                {
+                                                    MainSlider.Maximum = (double)_logProcessor.GetNumber - 1;
+                                                }
+                                                else
+                                                {
+                                                    MainSlider.Maximum = Math.Ceiling((double)(_logProcessor.GetNumber - 1) / 10) * 10;
+
+                                                }
                                                 MainSlider.Value = _logProcessor.Index - 1;
-                                                MainSlider.Maximum = _logProcessor.GetNumber - 1;
+
                                                 if (tradeLog == null) tradeLog = new ObservableCollection<string>();
                                                 if (ast.Event != null && ast.Event.Message != "")
                                                     tradeLog.Add(ast.Event.Message);
@@ -389,11 +410,20 @@ namespace AgentsRebuilt
                                     else
                                     {
                                         _logProcessor.InitOrReread(Config.HistPath, _agentDataDictionary, Dispatcher, _currentAgent);
-                                        LineNumberToCoordinateConverter.FieldCount = _logProcessor.GetNumber;
+                                        LineNumberToCoordinateConverter.FieldCount = (int) MainSlider.Maximum;
                                         LineNumberToCoordinateConverter.FieldDuration =
                                                     _logProcessor.GetTimeByState(_logProcessor.GetNumber - 1);
-                                        UpdateSliderMarks(dsc, _logProcessor.GetNumber);
-
+                                        UpdateSliderMarks(dsc, (int) MainSlider.Maximum);
+                                        //if (ast!=null)
+                                        //{
+                                        //    visualAgentsPane = ast.AllAgents;
+                                        //    visualItemsPane = ast.AllItems;
+                                        //    dsc.Invoke(() =>
+                                        //    {
+                                        //        AgentsList.DataContext = visualAgents;
+                                        //        AuctionsList.DataContext = visualAuctions;
+                                        //    });
+                                        //}
 
                                     }
                                 }
@@ -515,7 +545,7 @@ namespace AgentsRebuilt
         {
             dsc.Invoke(() =>
             {
-                SliderMark10.Content = number - 1;
+                SliderMark10.Content = number;
                 {
                     SliderMark1.Content = (int) (number / 10);
                     SliderMark2.Content = (int)(number *2 / 10);
@@ -553,7 +583,6 @@ namespace AgentsRebuilt
 
         private void OnRun(object sender, RoutedEventArgs e)
         {
-            
             if (execState == ExecutionState.Void || execState == ExecutionState.Stopped)
             {
                 bool result;
@@ -564,6 +593,7 @@ namespace AgentsRebuilt
                 }
                 else
                 {
+                    
                     execState = ExecutionState.Running;
                     RunButton.IsEnabled = false;
                     FollowButton.IsEnabled = true;
@@ -576,6 +606,13 @@ namespace AgentsRebuilt
                     MainSlider.Value = _logProcessor.GetAgentStartStep(_currentAgent);
                     this.Dispatcher.Invoke(() =>
                     {
+                        MainSlider.Value = MainSlider.Minimum;
+                        visualAgents = new ObservableCollection<Agent>();
+                        visualAuctions = new ObservableCollection<Item>();
+                        visualCommons = new ObservableCollection<Item>(); 
+                        visualAgentsPane = new ObservableCollection<Agent>(); 
+                        visualItemsPane = new ObservableCollection<Item>(); 
+
                         StatusLabel.Foreground = new SolidColorBrush(Colors.Black);
                         StatusLabel.Content = "The visualisation is executing in Run mode";
                     });
@@ -588,6 +625,7 @@ namespace AgentsRebuilt
             }
             if (execState == ExecutionState.Paused)
             {
+
                 execState = ExecutionState.Running;
                 RunButton.IsEnabled = false;
                 FollowButton.IsEnabled = true;
@@ -790,7 +828,7 @@ namespace AgentsRebuilt
                 lock (_lockerLogProcessorIndex)
                 {
                     int start = _logProcessor.GetAgentStartStep(_currentAgent);
-                    int stop = _logProcessor.GetAgentEndStep(_currentAgent);
+                    int stop = LogProcessor.GetAgentEndStep(_currentAgent);
 
                     if (stop < Step || Step < start)
                     {
@@ -855,9 +893,9 @@ namespace AgentsRebuilt
                     tp = _logProcessor.GetAgentStartStep(_currentAgent);
                     //MainSlider.Value = tp;
                 }
-                else if (tp > _logProcessor.GetAgentEndStep(_currentAgent))
+                else if (tp > LogProcessor.GetAgentEndStep(_currentAgent))
                 {
-                    tp = _logProcessor.GetAgentEndStep(_currentAgent);
+                    tp = LogProcessor.GetAgentEndStep(_currentAgent);
                     //MainSlider.Value = tp;
                 }
 
@@ -1039,15 +1077,100 @@ namespace AgentsRebuilt
 
         private void OnAdmin(object sender, RoutedEventArgs e)
         {
+            if (!_hasAdministratorPrivilleges)
+            {
+                string name = Dialog.MyPrompt("Please enter administration password:", "Enter password");
+                if (name.Equals("meta"))
+                {
+                    _hasAdministratorPrivilleges = true;
+                }
+                else
+                {
+                    System.Windows.Forms.MessageBox.Show("Incorrect password!");
+                }
+            }
+            if (_hasAdministratorPrivilleges )
+            {
+                if (_strWriter != null)
+                {
+                    AdminButton.Content = "Admin";
+                    SimulationConsoleWindow console = new SimulationConsoleWindow(_strWriter, this);
+                    console.Show();
+                }
+                else
+                {
+                    if (Connect("localhost", 5100, out _strWriter))
+                    {
+                        SimulationConsoleWindow console = new SimulationConsoleWindow(_strWriter, this);
+                        console.Show();
+                    }
+                    else
+                    {
+                        System.Windows.Forms.MessageBox.Show("Error connecting to Communication Module!");
+                    }
 
-            SimulationConsoleWindow console = new SimulationConsoleWindow(_strWriter, this);
-            console.Show();
+                }
+            }
+            else
+            {
+                System.Windows.Forms.MessageBox.Show("Error connecting to Communication Module!");
+            }
         }
 
         public void ShutdownAdmin()
         {
-            AdminButton.Visibility = Visibility.Collapsed;
+            AdminButton.IsEnabled = false;
             _hasAdministratorPrivilleges = false;
         }
+
+        private void OnAgent(object sender, RoutedEventArgs e)
+        {
+            StreamWriter sst;
+            if (Connect("localhost", 7100, out sst))
+            {
+                SimulationConsoleWindow console = new SimulationConsoleWindow(sst, this);
+                console.Title = "Agent Console";
+                console.Show();
+            }
+        }
+
+        private void OnMainLoad(object sender, RoutedEventArgs e)
+        {
+            if (Config.AdminRights)
+            {
+                AdminButton.Visibility = Visibility.Visible;
+
+                string name = Dialog.MyPrompt("Please enter administration password:", "Enter password");
+                if (name.Equals("meta") )
+                {
+                    _hasAdministratorPrivilleges = true;
+                    if (!Connect("localhost", 5100, out _strWriter))
+                    {
+                        System.Windows.Forms.MessageBox.Show("Error connecting to Communication Module!");
+                        AdminButton.Content = @"Connect 
+as admin";
+                    }
+                }
+                else
+                {
+                    System.Windows.Forms.MessageBox.Show("Incorrect password!");
+                    AdminButton.Content = @"Connect 
+as admin";
+                }
+            }
+        }
+
+        private void StateRadio_Checked(object sender, RoutedEventArgs e)
+        {
+            PlaceMarker.Fill = new SolidColorBrush(Colors.BlueViolet);
+            LineNumber.Text = "0";
+        }
+
+        private void StateRadio_Unchecked(object sender, RoutedEventArgs e)
+        {
+            PlaceMarker.Fill = new SolidColorBrush(Colors.Red);
+            LineNumber.Text = "0";
+        }
+
     }
 }
