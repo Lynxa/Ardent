@@ -40,6 +40,7 @@ namespace AgentsRebuilt
             else
             {
                 log.Add("Connected to simulation");
+                log.Add("Please, enter a message:");
             }
         }
 

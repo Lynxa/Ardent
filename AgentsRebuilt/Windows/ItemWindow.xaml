@@ -1,22 +1,22 @@
 ﻿<Window x:Class="AgentsRebuilt.ItemWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Item details" Height="288" Width="190" Topmost="True" SizeToContent="Height"
+        Title="Item details" Height="288" Width="290" Topmost="True" SizeToContent="Height"
         >
     <Grid>
         
         <Grid.Resources>
             <DataTemplate x:Key="KVPItemTemplate">
 
-                <Grid Width="160" Height="40" >
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="90"></ColumnDefinition>
-                        <ColumnDefinition Width="65"></ColumnDefinition>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="40"></RowDefinition>
-                    </Grid.RowDefinitions>
-                    <Border BorderBrush="LightSlateGray" BorderThickness="1" CornerRadius="4" Grid.ColumnSpan="2">
+                <Grid Width="260" Height="Auto">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="85"></ColumnDefinition>
+                            <ColumnDefinition Width="175"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <Border BorderBrush="LightSlateGray" BorderThickness="1" CornerRadius="4" Grid.ColumnSpan="2">
 
                     </Border>
                     <TextBlock 
@@ -24,28 +24,29 @@
                         VerticalAlignment="Center"
                         Grid.Column="0"
                         Grid.Row="0"
-                        Margin="5,0,0,0"
+                        Margin="5,7,0,7"
                         />
                     <TextBlock 
                         Grid.Column="1"
                         Grid.Row="0"
                         Text = "{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}"
+                        TextWrapping="Wrap"
+                        Foreground="DarkRed"
                         VerticalAlignment="Center"
-                        Margin="5,0,0,0"
+                        Margin="5,7,0, 7"
                         />
 
                 </Grid>
             </DataTemplate>
         </Grid.Resources>
 
-        <Grid Width="168" Height="Auto">
+        <Grid Width="268" Height="Auto">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="168"></ColumnDefinition>
+                <ColumnDefinition Width="268"></ColumnDefinition>
                 
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="40"></RowDefinition>
-                <RowDefinition Height="Auto"></RowDefinition>
                 <RowDefinition Height="Auto"></RowDefinition>
                 <RowDefinition Height="20"/>
             </Grid.RowDefinitions>
@@ -62,17 +63,11 @@
                     
                     />
             </WrapPanel>
-            <WrapPanel Grid.Row="1">
-                <TextBlock 
-                    Name="itmInst" Text="{Binding}" VerticalAlignment="Center" TextWrapping="Wrap"
-                    Margin="5,0,0,0"
-                    />
-            </WrapPanel>
-            <ListBox Name="listBox1" Grid.Row="2"
+            <ListBox Name="listBox1" Grid.Row="1"
                              ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged}" 
                              ItemTemplate="{StaticResource KVPItemTemplate}" 
                              BorderThickness="0"  Margin="2,5"/>
-            <Grid Grid.Row="3">
+            <Grid Grid.Row="2">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"></ColumnDefinition>
                     <ColumnDefinition Width="*"></ColumnDefinition>

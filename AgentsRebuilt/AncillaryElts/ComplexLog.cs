@@ -6,14 +6,14 @@ namespace AgentsRebuilt
 {
     internal class ComplexLog
     {
-        private List<Dictionary<string, AgentState>> _dict = new List<Dictionary<string, AgentState>>();
+        private List<Dictionary<string, EnvironmentState>> _dict = new List<Dictionary<string, EnvironmentState>>();
 
 
         public void UpdateStatesAgentsItems (ObservableCollection<Agent> allAgents, ObservableCollection<Item> allItems, String agentID)
         {
             foreach (var dcc in _dict)
             {
-                AgentState tpState;
+                EnvironmentState tpState;
                 dcc.TryGetValue(agentID, out tpState);
                 if (tpState != null)
                 {
@@ -23,17 +23,17 @@ namespace AgentsRebuilt
             }
         }
 
-        public AgentState this[String agent, int i]
+        public EnvironmentState this[String agent, int i]
         {
             get
             {
-                AgentState hState;
+                EnvironmentState hState;
                 if (_dict[i].TryGetValue(agent, out hState)) return hState;
                 return null;
             }
         }
 
-        private Dictionary<String, AgentState> GetDictByTimeStamp(AgentState ag)
+        private Dictionary<String, EnvironmentState> GetDictByTimeStamp(EnvironmentState ag)
         {
             String hAt = ag.Clock.TimeStampH;
             foreach (var dict in _dict)
@@ -49,7 +49,7 @@ namespace AgentsRebuilt
             return null;
         }
 
-        internal void Add(AgentState state, String ag)
+        internal void Add(EnvironmentState state, String ag)
         {
             var dc = GetDictByTimeStamp(state);
             if (dc != null && !dc.ContainsKey(ag))
@@ -58,7 +58,7 @@ namespace AgentsRebuilt
             }
             else
             {
-                var ddc = new Dictionary<String, AgentState>();
+                var ddc = new Dictionary<String, EnvironmentState>();
                 ddc.Add(ag, state);
                 _dict.Add(ddc);
             }

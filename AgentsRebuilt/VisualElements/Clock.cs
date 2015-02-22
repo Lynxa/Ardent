@@ -92,7 +92,7 @@ namespace AgentsRebuilt
 
         
         // Convert given string with seconds to foramted string in foramt hh:mm:ss.ms
-        private string ToTime(string TimeString)
+        public static string ToTime(string TimeString)
         {
             string[] split = TimeString.Split(new Char[] { '.' }); // separate seconds from miliseconds
             string milisecs = (split.Length == 2) ? split[1] : ""; // get miliseconds if any, if not - empty string

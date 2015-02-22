@@ -112,7 +112,7 @@ namespace AgentsRebuilt
                 tResKvp = DecipherLine(line);
                 if (tResKvp != null)
                 {
-                    AgentState tst = null;
+                    EnvironmentState tst = null;
                     try
                     {
                         tst = StateObjectMapper.MapState(tResKvp, _dataDictionary, _mainDispatcher);
@@ -125,7 +125,13 @@ namespace AgentsRebuilt
                     if (tst != null)
                     {
                         tst.Clock.StepNo = tCounter;
-                        _stateTimeStampDictionary.Add(tst.Clock.HappenedAt, tCounter);
+                        if (!_stateTimeStampDictionary.ContainsKey(tst.Clock.HappenedAt))
+                            _stateTimeStampDictionary.Add(tst.Clock.HappenedAt, tCounter);
+                        else
+                        {
+                            tst.Clock.HappenedAt += '0';
+                            _stateTimeStampDictionary.Add(tst.Clock.HappenedAt, tCounter);
+                        };
                         _stateToTimeStampDictionary.Add(tCounter, tst.Clock.HappenedAt);
                         _stateToTimeSecsDictionary.Add(tCounter, (int)Double.Parse(tst.Clock.TimeStampH.Replace(".", ",")));
 
@@ -133,7 +139,7 @@ namespace AgentsRebuilt
                         
                         foreach (var ag in tst.Agents)
                         {
-                            if (!StateObjectMapper.ContainsAgent(_allAgents, ag.ID))
+                            //if (!StateObjectMapper.ContainsAgent(_allAgents, ag.ID))
                             {
                                 _allAgents.Add(ag.GetNeutralCopy());
                                 foreach (var it in ag.Items)
@@ -192,7 +198,7 @@ namespace AgentsRebuilt
                         tKvp = DecipherLine(l2);
                         if (tKvp != null)
                         {
-                            AgentState tst2 = null;
+                            EnvironmentState tst2 = null;
                             try
                             {
                                 tst2 = StateObjectMapper.MapState(tKvp, _dataDictionary, _mainDispatcher);
@@ -259,9 +265,9 @@ namespace AgentsRebuilt
             return _agentsWithLogAvailable.Contains(id);
         }
 
-        public bool GetNextLine(out AgentState result, ExecutionState execState)
+        public bool GetNextLine(out EnvironmentState result, ExecutionState execState)
         {
-            AgentState sTate = null;
+            EnvironmentState sTate = null;
             if (_states.Count == 0)
             {
                 result = null;
@@ -291,7 +297,7 @@ namespace AgentsRebuilt
                 }
                 else if (end >= Index && Index > start)
                 {
-                    sTate = new AgentState();
+                    sTate = new EnvironmentState();
                     var sTate1 = _states[_currentAgent, Index - 1].GetFullCopy(); //Vik-deletedItemsBug
                     var state2 = _states[_currentAgent, Index].GetFullCopy(); //Vik-deletedItemsBug
                     StateObjectMapper.UpdateState(sTate1, sTate, _dataDictionary, _mainDispatcher);
@@ -315,9 +321,9 @@ namespace AgentsRebuilt
             return (sTate!=null);
         }
 
-        public bool GetThisLine(out AgentState result, ExecutionState execState)
+        public bool GetThisLine(out EnvironmentState result, ExecutionState execState)
         {
-            AgentState sTate = null;
+            EnvironmentState sTate = null;
             if (_states.Count > Index && Index > 0)
             {
                 sTate = _states[_currentAgent, Index - 1].GetFullCopy(); //Vik-deletedItemsBug
@@ -328,9 +334,9 @@ namespace AgentsRebuilt
             return (sTate != null);
         }
 
-        public bool GetFirstLine(out AgentState result, ExecutionState execState)
+        public bool GetFirstLine(out EnvironmentState result, ExecutionState execState)
         {
-            AgentState sTate = null;
+            EnvironmentState sTate = null;
             if (_states.Count > 0)
             {
                 sTate = _states[_currentAgent, 0].GetFullCopy(); //Vik-deletedItemsBug; //TODO REFACTORING FOR AGENT VIEW
@@ -340,7 +346,7 @@ namespace AgentsRebuilt
             return (sTate != null);
         }
 
-        public bool GetLastLine(out AgentState result)
+        public bool GetLastLine(out EnvironmentState result)
         {
             Index = _states.Count - 1;
             var sTate = _states[_currentAgent, Index].GetFullCopy(); //Vik-deletedItemsBug
@@ -532,19 +538,6 @@ namespace AgentsRebuilt
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
             }
         }
-
-
-    private class Duo
-    {
-        public int StartStep;
-        public int EndStep;
-
-        public Duo(int alpha, int beta)
-        {
-            StartStep = alpha;
-            EndStep = beta;
-        }
-    }
 
 
     internal static bool GetSpecialData(string filename, out List<string> speciaList, out String specialName)

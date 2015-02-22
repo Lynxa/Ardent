@@ -140,6 +140,7 @@ namespace AgentsRebuilt
             if (c == Colors.Green) { return Colors.MintCream; }
             if (c == Colors.Orange) { return Colors.FloralWhite; }
             if (c == Colors.GreenYellow) { return Colors.Honeydew; }
+            if (c == Colors.Gray) { return Colors.GhostWhite; }
             return agentColor;
         }
     }

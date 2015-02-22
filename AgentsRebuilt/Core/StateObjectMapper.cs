@@ -15,7 +15,7 @@ namespace AgentsRebuilt
     static class StateObjectMapper
     {
 
-        public static AgentState MapState(KVP root, AgentDataDictionary _agentDataDictionary, Dispatcher uiThread)
+        public static EnvironmentState MapState(KVP root, AgentDataDictionary _agentDataDictionary, Dispatcher uiThread)
         {
             ObservableCollection<Agent> agList = new ObservableCollection <Agent>();
             ObservableCollection<Item> aucList = new ObservableCollection<Item>();
@@ -23,7 +23,7 @@ namespace AgentsRebuilt
 
             Dictionary<String, List<KVP>> agts = new Dictionary<string, List<KVP>>();
 
-            AgentState state = new AgentState();
+            EnvironmentState state = new EnvironmentState();
             foreach (var kvp in root.ListOfItems)
             {
                 if (kvp.Key.Equals("clock"))
@@ -37,7 +37,7 @@ namespace AgentsRebuilt
                     aucList.Add(tItem);
                 }
 
-                else if (kvp.Key.StartsWith("event"))
+                if (kvp.Key.StartsWith("event"))
                 {
                     //VIK - for future use
                     //Vik -- the future has come. 2014-08-25
@@ -114,7 +114,7 @@ namespace AgentsRebuilt
         }
 
         
-        public static void UpdateState (AgentState newState, AgentState oldState,AgentDataDictionary _agentDataDictionary, Dispatcher uiThread)
+        public static void UpdateState (EnvironmentState newState, EnvironmentState oldState,AgentDataDictionary _agentDataDictionary, Dispatcher uiThread)
         {
             if (oldState.Clock == null)
             {
@@ -123,6 +123,8 @@ namespace AgentsRebuilt
 
             oldState.Clock.HappenedAt = newState.Clock.HappenedAt;
             oldState.Clock.ExpiredAt = newState.Clock.ExpiredAt;
+            oldState.Clock.TimeStampE = newState.Clock.TimeStampE;
+            oldState.Clock.TimeStampH = newState.Clock.TimeStampH;
             oldState.Clock.SetTextList();
             
             oldState.Event = newState.Event;
@@ -202,9 +204,15 @@ namespace AgentsRebuilt
             {
                 if (!ContainsItem(oldCommons, auction.Key))
                 {
-                    Item auction1 = auction;
-                    uiThread.Invoke(() => oldCommons.Add(auction1));
+                    uiThread.Invoke(() => oldCommons.Add(auction));
                 }
+                    /* **************************************************** ACHTUNG!!!***********************/
+                else
+                {
+                    Item oldItem = GetItemByKey(oldCommons, auction.Key);
+                    UpdateItem(oldItem, auction);
+                }
+                /* **************************************************** ACHTUNG!!!***********************/
             }
         }
 
@@ -249,6 +257,14 @@ namespace AgentsRebuilt
                     Item auction1 = auction;
                     uiThread.Invoke(() => oldAuctions.Add(auction1));
                 }
+                /* **************************************************** ACHTUNG!!!***********************/
+                else
+                {
+                    Item oldItem = GetItemByKey(oldAuctions, auction.Key);
+                    UpdateItem(oldItem, auction);
+                }
+                /* **************************************************** ACHTUNG!!!***********************/
+
             }
         } 
 

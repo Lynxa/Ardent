@@ -42,7 +42,7 @@ namespace AgentsRebuilt
         private int _move_to = 0;
         private Boolean isFirstLine = true;
         private bool stopwork;
-        private AgentState ast = null;
+        private EnvironmentState ast = null;
         private String _lockerLogProcessorIndex = "meta";
         private bool _is_actual = false;
         private String _currentAgent = "god";
@@ -104,6 +104,7 @@ namespace AgentsRebuilt
         public MainWindow()
         {
             InitializeComponent();
+
             String rawpath;
             rawpath = ReadPathFromFile("path_to_config.txt");
             bool _readCfg = false;
@@ -133,7 +134,7 @@ namespace AgentsRebuilt
             AuctionsLabel.Header = "{Special items}";
             LoadAndSetup(Config);
             //AgentDataDictionary = new AgentDataDictionary(@"D:\#Recent_desktop\UNI\PES602\DMG\dammage 1.0\domains\english.pl");
-
+            this.Title = "MultiAgentz Visualization - " + Config.HistPath;
         }
 
         public static class Dialog
@@ -185,7 +186,8 @@ namespace AgentsRebuilt
 
                     _logProcessor.InitOrReread(Config.HistPath, _agentDataDictionary, dsc, _currentAgent);
                     Item.cfgSettings = Config;
-
+                    this.Title = "MultiAgentz Visualization - " + Config.HistPath;
+                    
                     StatusLabel.Foreground = new SolidColorBrush(Colors.Black);
                     StatusLabel.Content = _currentMessage;
                     if (_logProcessor.GetNumber - 1 > 20)
@@ -204,6 +206,13 @@ namespace AgentsRebuilt
                     MainSlider.Value = _logProcessor.Index - 1;
                     UpdateSliderMarks(dsc, (int)MainSlider.Maximum);
                     AuctionsLabel.Header = AgentDataDictionary.GetSpecialItemGroupName();
+
+                    this.AgentsList.DataContext = new ObservableCollection<Agent>();
+                    this.AuctionsList.DataContext= new ObservableCollection<Item>();
+                    this.CommonsList.DataContext= new ObservableCollection<Item>();
+                    this.AgentsPane.DataContext= new ObservableCollection<Agent>();
+                    this.ItemsPane.DataContext= new ObservableCollection<Item>();
+                    this.TradeChannel.DataContext = new List<String>();
 
                     //UpdateSliderMarks(dsc, _logProcessor.GetNumber);
 
@@ -232,7 +241,7 @@ namespace AgentsRebuilt
 
                     //_logProcessor.InitOrReread(Config.HistPath, _agentDataDictionary, dsc, _currentAgent);
                     Item.cfgSettings = Config;
-                    AgentState newState;
+                    EnvironmentState newState;
 
 
                     Task.Factory.StartNew(() =>
@@ -278,7 +287,7 @@ namespace AgentsRebuilt
                                         {
                                             if (execState == ExecutionState.Moving && _move_to != _logProcessor.GetAgentStartStep(_currentAgent))
                                             {
-                                                //AgentState secondState;
+                                                //EnvironmentState secondState;
                                                 //if (_move_to != 0 && _logProcessor.GetNextLine(out secondState, ExecutionState.Running))
                                                 //{
                                                 //    StateObjectMapper.UpdateState(secondState, newState, _agentDataDictionary, dsc);
@@ -287,7 +296,7 @@ namespace AgentsRebuilt
                                             }
                                             else
                                             {
-                                                ast = new AgentState();
+                                                ast = new EnvironmentState();
                                                 StateObjectMapper.UpdateState(newState, ast, _agentDataDictionary, dsc);
                                             }
 
@@ -410,10 +419,36 @@ namespace AgentsRebuilt
                                     else
                                     {
                                         _logProcessor.InitOrReread(Config.HistPath, _agentDataDictionary, Dispatcher, _currentAgent);
-                                        LineNumberToCoordinateConverter.FieldCount = (int) MainSlider.Maximum;
-                                        LineNumberToCoordinateConverter.FieldDuration =
-                                                    _logProcessor.GetTimeByState(_logProcessor.GetNumber - 1);
-                                        UpdateSliderMarks(dsc, (int) MainSlider.Maximum);
+                                        
+                                        
+                                        int slidercounter;
+
+                                        dsc.Invoke(() =>
+                                        {
+                                            if (_logProcessor.GetNumber < 2) slidercounter = 10;
+                                            else
+                                                //ast.Clock.StepNo = _logProcessor.Index;
+                                                if (_logProcessor.GetNumber - 1 > 20)
+                                                {
+                                                    slidercounter = _logProcessor.GetNumber - 1;
+                                                    MainSlider.Maximum = (double) _logProcessor.GetNumber - 1;
+                                                }
+                                                else
+                                                {
+                                                    slidercounter =
+                                                        (int)
+                                                            Math.Ceiling((double) (_logProcessor.GetNumber - 1)/10)*
+                                                        10;
+                                                    MainSlider.Maximum = slidercounter;
+
+                                                }
+
+                                            LineNumberToCoordinateConverter.FieldCount = slidercounter;
+                                            LineNumberToCoordinateConverter.FieldDuration =
+                                                _logProcessor.GetTimeByState(_logProcessor.GetNumber - 1);
+                                            UpdateSliderMarks(dsc, slidercounter);
+                                        });
+
                                         //if (ast!=null)
                                         //{
                                         //    visualAgentsPane = ast.AllAgents;
@@ -739,6 +774,7 @@ namespace AgentsRebuilt
                         _currentMessage = "The visualisation is stopped";
                         execState = ExecutionState.Stopped;
                        // LogProcessor.SetIndex(LogProcessor.GetNumber - 1);
+
                     }
                     _stopSleeping = true;
                 }
@@ -997,7 +1033,7 @@ namespace AgentsRebuilt
             //MessageBox.Show("suspicious "+ tp.InstanceOf);
         }
 
-        private void CommonRightsItem_Clicked(object sender, MouseButtonEventArgs e)
+        private void CommonRightsItem_Clicked(object sender, RoutedEventArgs e)
         {
             var item = sender as System.Windows.Controls.Button;
             var st = item.DataContext.GetType();
@@ -1132,6 +1168,10 @@ namespace AgentsRebuilt
                 console.Title = "Agent Console";
                 console.Show();
             }
+            else
+            {
+                System.Windows.Forms.MessageBox.Show("Cannot connect to the simulation! Check if simulation and proxy are running.");
+            }
         }
 
         private void OnMainLoad(object sender, RoutedEventArgs e)
@@ -1172,5 +1212,19 @@ as admin";
             LineNumber.Text = "0";
         }
 
+        private void UIElement_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            var item = (sender as System.Windows.Controls.Grid);
+            Item tp = (Item)item.DataContext;
+            tp.IsExpanded = !tp.IsExpanded;
+        }
+
+
+        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        {
+            var item = (sender as System.Windows.Controls.Button);
+            Item tp = (Item)item.DataContext;
+            tp.IsPaneExpanded = !tp.IsPaneExpanded;
+        }
     }
 }

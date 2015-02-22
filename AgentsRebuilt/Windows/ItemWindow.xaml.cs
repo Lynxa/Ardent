@@ -42,7 +42,7 @@ namespace AgentsRebuilt
             itmImage.DataContext = item.Source;
             itmTitle.DataContext = item.Title;
             listBox1.DataContext = item.StringAttributeList;
-            itmInst.DataContext = item.InstanceOf;
+            //itmInst.DataContext = item.InstanceOf;
             brd1.DataContext = item.BorderBrush2;
             StateText.DataContext = state;
             TimeText.DataContext = time;

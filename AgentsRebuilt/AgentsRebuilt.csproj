@@ -59,18 +59,19 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="ANcillaryElts\AgentDataDictionary.cs" />
-    <Compile Include="ANcillaryElts\ExecutionState.cs" />
-    <Compile Include="ANcillaryElts\ItemTemplateSelector.cs" />
-    <Compile Include="ANcillaryElts\LineNumberToCoordinateConverter.cs" />
-    <Compile Include="Configuration\CfgSettings.cs" />
-    <Compile Include="Configuration\CfgStr.cs" />
-    <Compile Include="ANcillaryElts\MinusOneConverter.cs" />
-    <Compile Include="ANcillaryElts\CheckToColorConverter.cs" />
+    <Compile Include="ANcillaryElts\Duo.cs" />
+    <Compile Include="Core\AgentDataDictionary.cs" />
+    <Compile Include="Enums\ExecutionState.cs" />
+    <Compile Include="Convertors\ItemTemplateSelector.cs" />
+    <Compile Include="Convertors\LineNumberToCoordinateConverter.cs" />
+    <Compile Include="ANcillaryElts\CfgSettings.cs" />
+    <Compile Include="ANcillaryElts\CfgStr.cs" />
+    <Compile Include="Convertors\MinusOneConverter.cs" />
+    <Compile Include="Convertors\CheckToColorConverter.cs" />
     <Compile Include="Windows\CfgWindow.xaml.cs">
       <DependentUpon>CfgWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Core\ComplexLog.cs" />
+    <Compile Include="ANcillaryElts\ComplexLog.cs" />
     <Compile Include="Windows\SimulationConsoleWindow.xaml.cs">
       <DependentUpon>SimulationConsoleWindow.xaml</DependentUpon>
     </Compile>
@@ -80,8 +81,8 @@
     </Compile>
     <Compile Include="Core\NetworkReader.cs" />
     <Compile Include="Core\ColorAndIconAssigner.cs" />
-    <Compile Include="ANcillaryElts\Item.cs" />
-    <Compile Include="ANcillaryElts\ElementStatus.cs" />
+    <Compile Include="VisualElements\Item.cs" />
+    <Compile Include="Enums\ElementStatus.cs" />
     <Compile Include="Core\StateObjectMapper.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Page Include="Windows\CfgWindow.xaml">
@@ -97,12 +98,12 @@
       <SubType>Designer</SubType>
     </Page>
     <Compile Include="VisualElements\Agent.cs" />
-    <Compile Include="VisualElements\AgentState.cs" />
+    <Compile Include="VisualElements\EnvironmentState.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ANcillaryElts\ItemType.cs" />
+    <Compile Include="Enums\ItemType.cs" />
     <Compile Include="ANcillaryElts\KVP.cs" />
     <Compile Include="VisualElements\Clock.cs" />
     <Compile Include="Core\LogProcessor.cs" />

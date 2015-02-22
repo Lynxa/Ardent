@@ -20,16 +20,90 @@ namespace AgentsRebuilt
 {
     public class Item : KVP, INotifyPropertyChanged
     {
-        public ElementStatus st;           
-        public Dictionary<String, String> StringAttributeList;
+        public ElementStatus st;
+
+        private Dictionary<String, String> _stringAttributeList = new Dictionary<string, string>();
+        public Dictionary<String, String> StringAttributeList
+        {
+            get { return _stringAttributeList; }
+            set
+            {
+                UIDispatcher.Invoke(() =>
+                {
+                    _stringAttributeList = value;
+                });
+                NotifyPropertyChanged();
+            }
+        }
         public String InstanceOf;
        
         public static CfgSettings cfgSettings;
         private AgentDataDictionary ImageDictionary;
-        
+
+        private bool _isExpanded;
         private Brush bg;
         private Brush brd, brd2;
         private static Dispatcher UIDispatcher;
+        private bool _isPaneExpanded;
+        private String _owned_by="";
+        private String _held_by="";
+
+        public bool IsExpanded
+        {
+            get { return _isExpanded; }
+
+            set
+            {
+                UIDispatcher.Invoke(() =>
+                {
+                    _isExpanded = value;
+                });
+                NotifyPropertyChanged();
+            }
+        }
+
+        public String OwnedBy
+        {
+            get { return _owned_by; }
+
+            set
+            {
+                UIDispatcher.Invoke(() =>
+                {
+                    _owned_by = value;
+                });
+                NotifyPropertyChanged();
+            }
+        }
+
+        public String HeldBy
+        {
+            get { return _held_by; }
+
+            set
+            {
+                UIDispatcher.Invoke(() =>
+                {
+                    _held_by = value;
+                });
+                NotifyPropertyChanged();
+            }
+        }
+
+        public bool IsPaneExpanded
+        {
+            get { return _isPaneExpanded; }
+
+            set
+            {
+                UIDispatcher.Invoke(() =>
+                {
+                    _isPaneExpanded = value;
+                });
+                NotifyPropertyChanged();
+            }
+        }
+
 
         public string Title
         {
@@ -54,6 +128,9 @@ namespace AgentsRebuilt
             result.ImageDictionary = ImageDictionary;
             result.InstanceOf = InstanceOf;
             result.Type = this.Type;
+            result.OwnedBy = String.Copy(OwnedBy);
+            result.HeldBy = String.Copy(HeldBy);
+
 
             return result;
         }
@@ -62,13 +139,20 @@ namespace AgentsRebuilt
         {
             var result = new Item(Key, ListOfItems, cfgSettings, ImageDictionary, UIDispatcher);
             result.StringAttributeList = new Dictionary<string, string>();
-
+            foreach (var keyvaluepair in StringAttributeList)
+            {
+                result.StringAttributeList.Add(String.Copy(keyvaluepair.Key), String.Copy(keyvaluepair.Value));
+            }
             result.Status = Status;
             result.ImageDictionary = ImageDictionary;
             result.InstanceOf = InstanceOf;
             result.Type = this.Type;
+            result.IsPaneExpanded = IsPaneExpanded;
+            result.IsExpanded = IsExpanded;
             result.Background = Background;
             result.BorderBrush = BorderBrush;
+            result.OwnedBy = String.Copy(OwnedBy);
+            result.HeldBy = String.Copy(HeldBy);
             return result;
         }
 
@@ -184,15 +268,15 @@ namespace AgentsRebuilt
         private Brush getBrush()
         {
             String ownedID, heldID;
-            if (!StringAttributeList.TryGetValue("Owned by", out ownedID)) return null;
-            if (!StringAttributeList.TryGetValue("Held by", out heldID)) return null;
-            if (ownedID.Equals(heldID))
+            //if (!StringAttributeList.TryGetValue("Owned by", out ownedID)) return null;
+            //if (!StringAttributeList.TryGetValue("Held by", out heldID)) return null;
+            if (_owned_by.Equals(_held_by))
             {
                 return new SolidColorBrush(Colors.LightSlateGray);
             }
             else
             {
-                return new SolidColorBrush(ColorAndIconAssigner.GetOrAssignColorById(ownedID));
+                return new SolidColorBrush(ColorAndIconAssigner.GetOrAssignColorById(_owned_by));
             }
         }
 
@@ -207,33 +291,78 @@ namespace AgentsRebuilt
         public Item(String key, List<KVP> list, CfgSettings cfg, AgentDataDictionary ag, Dispatcher uiDispatcher): base(key, new List<KVP>())
         {
             cfgSettings = cfg;
+            if (key.StartsWith("oblig"))
+            {
+               // InstanceOf = "obligation";
+            }
             ImageDictionary = ag;
             UIDispatcher = uiDispatcher;
             Status = ElementStatus.Unchanged;
             
-            StringAttributeList = new Dictionary<string, string>();
             foreach (var l in list)
             {
                 if (l.Key.Equals("held_by"))
                 {
-                    StringAttributeList.Add("Held by", l.Value);
+                    StringAttributeList.Add("Held by", ag.GetAgentNameByID(l.Value) + " (" + l.Value + ")");
+                    _held_by = l.Value;
                     ListOfItems.Remove(l);
                 }
                 else if (l.Key.Equals("owned_by"))
                 {
-                    StringAttributeList.Add("Owned by", l.Value);
+                    StringAttributeList.Add("Owned by", ag.GetAgentNameByID(l.Value) + " (" + l.Value + ")");
+                    _owned_by = l.Value;
                     ListOfItems.Remove(l);
                 }
                 else if (l.Key.Equals("instance_of"))
                 {
+                    StringAttributeList.Add("Instance of", l.Value);
                     InstanceOf = l.Value;
                 }
+                else if (l.Key.Equals("weight"))
+                {
+                    StringAttributeList.Add("Weight", l.Value);
+                    ListOfItems.Remove(l);
+                }
+                else if (l.Key.Equals("status"))
+                {
+                    StringAttributeList.Add("Status", l.Value);
+                    ListOfItems.Remove(l);
+                }
+                else if (l.Key.Equals("auctioneer"))
+                {
+                    StringAttributeList.Add("Auctioneer", ag.GetAgentNameByID(l.Value) + " (" + l.Value + ")");
+                    ListOfItems.Remove(l);
+                }
+                else if (l.Key.Equals("highest_bidder"))
+                {
+                    StringAttributeList.Add("Highest bidder", ag.GetAgentNameByID(l.Value) + " (" + l.Value + ")");
+                    ListOfItems.Remove(l);
+                }
+                else if (l.Key.Equals("last_bid_time"))
+                {
+                    StringAttributeList.Add("Last bid time", l.Value.Substring(0, 5));
+                    ListOfItems.Remove(l);
+                }
+                else if (l.Key.IndexOf("_") > 0)
+                {
+                    String st = l.Key.Replace("_", " ");
+                    st = st[0].ToString().ToUpper()[0] + st.Substring(1);
+                    StringAttributeList.Add(st, l.Value);
+                    ListOfItems.Remove(l);
+                }
+                else if (l.Key.Equals("item"))
+                {
+                    StringAttributeList.Add("Item", l.Value);
+                    InstanceOf = l.Value;
+                }
+                
                 else if (l.Type == ItemType.Attribute)
                 {
+                   // String st = l.Key[0].ToString().ToUpper()[0] + l.k.Substring(1);
                     StringAttributeList.Add(l.Key, l.Value);
                     ListOfItems.Remove(l);
                 }
-               else
+                else
                 {
                     ListOfItems.Add(l);
                 }
@@ -312,9 +441,10 @@ namespace AgentsRebuilt
                 }
                 else
                 {
-                    if (!ts.Equals(att.Value))
+                    if (!ts.Equals(att.Value) && !att.Key.Equals("Instance of"))
                     {
                         return ElementStatus.Changed;
+
                     }
                 }
             }

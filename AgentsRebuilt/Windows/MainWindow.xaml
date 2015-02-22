@@ -50,24 +50,94 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+            <DataTemplate x:Key="KVPPaneTemplate">
 
-            <DataTemplate x:Key="KVPItemTemplate">
-
-                <Grid Width="150" Height="40" MouseLeftButtonDown="KVPItem_Clicked">
+                <Grid Width="180" Height="Auto">
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="85"></ColumnDefinition>
+                        <ColumnDefinition Width="95"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Border BorderBrush="LightSlateGray" BorderThickness="1" CornerRadius="4" Grid.ColumnSpan="2" Margin="0,0,0,2">
+
+                    </Border>
+                    <TextBlock 
+                        Text="{Binding Path=Key}"
+                        VerticalAlignment="Center"
+                        Grid.Column="0"
+                        Grid.Row="0"
+                        Margin="5,5,0,5"
+                        Foreground="DarkSlateGray"
+                        />
+                    <TextBlock 
+                        Grid.Column="1"
+                        Grid.Row="0"
+                        Text = "{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}"
+                        TextWrapping="Wrap"
+                        VerticalAlignment="Center"
+                        Foreground="DarkRed"
+                        Margin="5,5,0,5"
+                        />
+
+                </Grid>
+            </DataTemplate>
+
+            
+            <DataTemplate x:Key="KVPTemplate">
+
+                <Grid Width="160" Height="Auto">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="65"></ColumnDefinition>
+                        <ColumnDefinition Width="95"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Border BorderBrush="LightSlateGray" BorderThickness="1" CornerRadius="4" Grid.ColumnSpan="2" Margin="0,0,0,2">
+
+                    </Border>
+                    <TextBlock 
+                        Text="{Binding Path=Key}"
+                        VerticalAlignment="Center"
+                        Grid.Column="0"
+                        Grid.Row="0"
+                        Margin="5,5,0,5"
+                        Foreground="DarkSlateGray"
+                        />
+                    <TextBlock 
+                        Grid.Column="1"
+                        Grid.Row="0"
+                        Text = "{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}"
+                        TextWrapping="Wrap"
+                        VerticalAlignment="Center"
+                        Foreground="DarkRed"
+                        Margin="5,5,0,5"
+                        />
+
+                </Grid>
+            </DataTemplate>
+            
+            <ControlTemplate x:Key="KVPItemTemplateCollapsed">
+                <!--Button Width="165" Margin="0,0,0,0" Style="{StaticResource TransparentButton}" MouseLeftButtonDown="UIElement_OnMouseDown"-->
+                <Grid Width="170" Height="40" MouseLeftButtonDown="UIElement_OnMouseDown">
+                <!--Grid Width="150" Height="40"-->
+                            <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="40"></ColumnDefinition>
-                        <ColumnDefinition Width="90"></ColumnDefinition>
+                        <ColumnDefinition Width="110"></ColumnDefinition>
                         <ColumnDefinition Width="20"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="40"></RowDefinition>
                     </Grid.RowDefinitions>
-                    <Border BorderBrush="{Binding Path=BorderBrush, UpdateSourceTrigger=PropertyChanged}" BorderThickness="1" CornerRadius="4" Grid.ColumnSpan="3" Background="{Binding Path=Background, UpdateSourceTrigger=PropertyChanged}">
+                    <Border BorderBrush="{Binding Path=BorderBrush, UpdateSourceTrigger=PropertyChanged}" BorderThickness="2" CornerRadius="4" Margin="0,0,0,1"
+                            Grid.ColumnSpan="3" Background="{Binding Path=Background, UpdateSourceTrigger=PropertyChanged}">
 
                     </Border>
                     <Image 
-                        Width="36"
-                        Height="36"
+                        Width="34"
+                        Height="35"
                         Grid.Column="0"
                         Grid.Row="0"
                         Source = "{Binding Path=Source}"/>
@@ -87,9 +157,96 @@
                         Grid.Row="0"
                         Text="{Binding Path=Amount}"
                         />
-                </Grid>
-            </DataTemplate>
+                
+            </Grid>
+                
+            </ControlTemplate>
+            
+            <ControlTemplate x:Key="KVPItemTemplateExpanded">
+                <Grid Width="170" Height="Auto" MouseLeftButtonDown="UIElement_OnMouseDown">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="170"></ColumnDefinition>
 
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="35"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Border Name="brd1" BorderBrush="{Binding Path=BorderBrush, UpdateSourceTrigger=PropertyChanged}" 
+                            BorderThickness="2" Margin="0,0,0,1" CornerRadius="4" Grid.RowSpan="2" Grid.Row="0" Grid.Column="0" 
+                            Background="{Binding Path=Background, UpdateSourceTrigger=PropertyChanged}" />
+                    <Grid Grid.Row="0" Grid.Column="0" >
+                        <!--Grid Width="150" Height="40"-->
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="40"></ColumnDefinition>
+                            <ColumnDefinition Width="110"></ColumnDefinition>
+                            <ColumnDefinition Width="20"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="40"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <Image 
+                        Width="34"
+                        Height="34"
+                        Grid.Column="0"
+                        Grid.Row="0"
+                        Source = "{Binding Path=Source}"/>
+                    <TextBlock 
+                        Text="{Binding Path=Title}"
+                        VerticalAlignment="Center"
+                        Foreground="DarkSlateGray"
+                        Grid.Column="1"
+                        Grid.Row="0"/>
+                    <TextBlock 
+                        VerticalAlignment="Center"
+                        Foreground="DarkRed"
+                        HorizontalAlignment="Right"
+                        Background="Transparent"
+                        Margin="0,0,3,0"
+                        Grid.Column="2"
+                        Grid.Row="0"
+                        Text="{Binding Path=Amount}"
+                        />
+                     </Grid>
+                    <ListBox Name="listBox1" Grid.Row="1" Grid.Column="0"
+                             ItemsSource="{Binding StringAttributeList, UpdateSourceTrigger=PropertyChanged}" 
+                             ItemTemplate="{StaticResource KVPTemplate}" 
+                             BorderThickness="0"  Margin="2,5"/>
+                </Grid>
+            </ControlTemplate>
+
+            <Style TargetType="ListBoxItem" x:Key="ListBoxItemStyle1">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ListBoxItem">
+                            <Control x:Name="theControl2" 
+                         Template="{StaticResource KVPItemTemplateCollapsed}"
+                         >
+                            </Control>
+                            <ControlTemplate.Triggers>
+                                <DataTrigger Binding="{Binding Path=IsExpanded, UpdateSourceTrigger=PropertyChanged}" Value="True">
+                                    <Setter TargetName="theControl2" Property="Template"
+                            Value="{StaticResource KVPItemTemplateExpanded}" />
+                                </DataTrigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <DataTemplate x:Key="KVPItemTemplate">
+                <Control x:Name="theControl2" 
+                         Template="{StaticResource KVPItemTemplateCollapsed}"
+                         >
+                </Control>
+                <DataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding Path=IsExpanded, UpdateSourceTrigger=PropertyChanged}" Value="True">
+                        <Setter TargetName="theControl2" Property="Template"
+                            Value="{StaticResource KVPItemTemplateExpanded}" />
+                    </DataTrigger>
+                </DataTemplate.Triggers>
+            </DataTemplate>
+            
             <DataTemplate x:Key="ClockItemTemplate">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -108,17 +265,18 @@
                 </Grid>
             </DataTemplate>
 
-            <DataTemplate x:Key="ItemPaneTemplate">
-                <Button Width="165" Margin="0,0,0,2" Style="{StaticResource TransparentButton}" MouseDoubleClick="CommonRightsItem_Clicked">
-                    <Grid Width="165" Margin="0">
+            <ControlTemplate x:Key="ItemPaneTemplateCollapsed">
+                <Button Width="190" Margin="0,0,0,2" Style="{StaticResource TransparentButton}" Click="ButtonBase_OnClick">
+                    <!--MouseDoubleClick="CommonRightsItem_Clicked"-->
+                    <Grid Width="190" Margin="0">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="165"></ColumnDefinition>
+                            <ColumnDefinition Width="190"></ColumnDefinition>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="52"></RowDefinition>
                             <RowDefinition Height="*"></RowDefinition>
                         </Grid.RowDefinitions>
-                        <Border Grid.RowSpan="2" BorderThickness="2" Background="{Binding Path=Background, UpdateSourceTrigger=PropertyChanged}" BorderBrush="LightSlateGray" />
+                        <Border Grid.RowSpan="2" BorderThickness="2" Background="{Binding Path=Background, UpdateSourceTrigger=PropertyChanged}" BorderBrush="{Binding Path=BorderBrush}" />
                         <WrapPanel Grid.Row="0">
                             <Image 
                             Source="{Binding Path=Source}"
@@ -133,13 +291,60 @@
 
                     </Grid>
                 </Button>
-            </DataTemplate>
-
-            <DataTemplate x:Key="CommonRightsTemplate">
-                <Button Width="165" Margin="0,0,0,2" Style="{StaticResource TransparentButton}" MouseDoubleClick="CommonRightsItem_Clicked">
-                    <Grid Width="165" Margin="0">
+            </ControlTemplate>
+            <ControlTemplate x:Key="ItemPaneTemplateExpanded">
+                <Button Width="190" Margin="0,0,0,2" Style="{StaticResource TransparentButton}" Click="ButtonBase_OnClick">
+                    <!--MouseDoubleClick="CommonRightsItem_Clicked"-->
+                    <Grid Width="190" Margin="0">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="165"></ColumnDefinition>
+                            <ColumnDefinition Width="190"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="52"></RowDefinition>
+                            <RowDefinition Height="*"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <Border Grid.RowSpan="2" BorderThickness="2" Background="{Binding Path=Background, UpdateSourceTrigger=PropertyChanged}" BorderBrush="{Binding Path=BorderBrush, UpdateSourceTrigger=PropertyChanged}" />
+                        <WrapPanel Grid.Row="0">
+                            <Image 
+                            Source="{Binding Path=Source}"
+                            Height="48"
+                            Margin="2,2,0,2"
+                            />
+                            <TextBlock
+                            Margin="10,5,0,0"
+                            Text="{Binding Path=Title}"   
+                             
+                        />
+
+                        </WrapPanel>
+                        <ListBox Name="listBox1" Grid.Row="1" Grid.Column="0"
+                             ItemsSource="{Binding StringAttributeList, UpdateSourceTrigger=PropertyChanged}" 
+                             ItemTemplate="{StaticResource KVPPaneTemplate}" 
+                             BorderThickness="0"  Margin="2,5"/>
+
+                    </Grid>
+                </Button>
+            </ControlTemplate>
+
+            <DataTemplate x:Key="ItemPaneTemplate">
+                <Control x:Name="theControl1" 
+                         Template="{StaticResource ItemPaneTemplateCollapsed}"
+                         >
+                </Control>
+                <DataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding Path=IsPaneExpanded, UpdateSourceTrigger=PropertyChanged}" Value="True">
+                        <Setter TargetName="theControl1" Property="Template"
+                            Value="{StaticResource ItemPaneTemplateExpanded}" />
+                    </DataTrigger>
+                </DataTemplate.Triggers>
+            </DataTemplate>
+            
+            
+            <DataTemplate x:Key="CommonRightsTemplate">
+                <Button Width="190" Margin="0,0,0,2" Style="{StaticResource TransparentButton}" MouseDoubleClick="CommonRightsItem_Clicked">
+                    <Grid Width="190" Margin="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="190"></ColumnDefinition>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="52"></RowDefinition>
@@ -163,7 +368,7 @@
             </DataTemplate>
 
             <DataTemplate x:Key="AuctionTemplate">
-                <Button Width="165" Margin="0,0,0,2" Style="{StaticResource TransparentButton}" MouseDoubleClick="CommonRightsItem_Clicked">
+                <Button Width="165" Margin="0,0,0,2" Style="{StaticResource TransparentButton}" Click="CommonRightsItem_Clicked">
                     <Grid Width="165" Margin="0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="165"></ColumnDefinition>
@@ -190,10 +395,10 @@
             </DataTemplate>
 
             <ControlTemplate  x:Key="AgentPaneTemplateCollapsed">
-                <Button Width="165" Margin="0,0,0,2" Style="{StaticResource TransparentButton}" MouseDoubleClick="CommonRightsItem_Clicked">
-                    <Grid Width="165" Margin="0">
+                <Button Width="190" Margin="0,0,0,2" Style="{StaticResource TransparentButton}" Click="CommonRightsItem_Clicked">
+                    <Grid Width="190" Margin="0">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="165"></ColumnDefinition>
+                            <ColumnDefinition Width="190"></ColumnDefinition>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="52"></RowDefinition>
@@ -217,10 +422,10 @@
             </ControlTemplate>
 
             <ControlTemplate  x:Key="AgentPaneTemplateExpanded">
-                <Button Width="165" Margin="0,0,0,2" Style="{StaticResource TransparentButton}" MouseDoubleClick="CommonRightsItem_Clicked">
-                    <Grid Width="165" Margin="0">
+                <Button Width="190" Margin="0,0,0,2" Style="{StaticResource TransparentButton}" Click="CommonRightsItem_Clicked">
+                    <Grid Width="190" Margin="0" >
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="165"></ColumnDefinition>
+                            <ColumnDefinition Width="190"></ColumnDefinition>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="52"></RowDefinition>
@@ -243,9 +448,9 @@
 
                         <Grid Grid.Row="1">
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="70"></ColumnDefinition>
                                 <ColumnDefinition Width="60"></ColumnDefinition>
-                                <ColumnDefinition Width="50"></ColumnDefinition>
-                                <ColumnDefinition Width="50"></ColumnDefinition>
+                                <ColumnDefinition Width="55"></ColumnDefinition>
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="25"></RowDefinition>
@@ -322,15 +527,17 @@
 
 
             <ControlTemplate x:Key="AgentTemplateCollapsed">
-                <Grid Width="165" Margin="20" MouseLeftButtonDown="UIElement_OnMouseLeftButtonDown">
+                <Grid Width="185" Margin="20" MouseLeftButtonDown="UIElement_OnMouseLeftButtonDown">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="165"></ColumnDefinition>
+                        <ColumnDefinition Width="185"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="52"></RowDefinition>
                         <RowDefinition Height="*"></RowDefinition>
                     </Grid.RowDefinitions>
-                    <Border Grid.RowSpan="2" BorderThickness="2" BorderBrush="{Binding Path=BorderBrush}" Background="{Binding Path=Background, UpdateSourceTrigger=PropertyChanged}" />
+                    <Border Grid.RowSpan="2" BorderThickness="2" BorderBrush="{Binding Path=BorderBrush}" 
+                            Background="{Binding Path=Background, UpdateSourceTrigger=PropertyChanged}" 
+                            Margin="-2,-2,-2,-2"/>
                     <WrapPanel Grid.Row="0">
                         <Image 
                             Source="{Binding Path=Source}"
@@ -353,7 +560,7 @@
             </ControlTemplate>
 
             <ControlTemplate x:Key="AgentTemplateExpanded">
-                <Grid Width="165" Margin="20" MouseLeftButtonDown="UIElement_OnMouseLeftButtonDown">
+                <Grid Width="Auto" Margin="20" MouseLeftButtonDown="UIElement_OnMouseLeftButtonDown">
                     <Grid.Resources>
                         <CollectionViewSource Source="{Binding itms}" x:Key="ItemsView">
                             <CollectionViewSource.SortDescriptions>
@@ -367,19 +574,20 @@
                     </Grid.Resources>
 
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="165"></ColumnDefinition>
+                        <ColumnDefinition Width="Auto"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="50"></RowDefinition>
-                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
                     </Grid.RowDefinitions>
                     <Border Grid.RowSpan="2" BorderThickness="2" BorderBrush="{Binding Path=BorderBrush}" 
-                            Background="{Binding Path=Background, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,-2"/>
+                            Background="{Binding Path=Background, UpdateSourceTrigger=PropertyChanged}" Margin="-2,-2,-2,-2"/>
+                    <Border Grid.Row="0" BorderThickness="0,0,0,1" BorderBrush="Gray"/>
                     <WrapPanel Grid.Row="0">
                         <Image 
                             Source="{Binding Path=Source}"
                             Height="48"
-                            Margin="2,2,0,0"
+                            Margin="2,2,0,2"
                             />
                         <StackPanel>
                             <TextBlock
@@ -392,10 +600,16 @@
                             />
                         </StackPanel>
                     </WrapPanel>
-                    <ListBox Name="listBox1" 
+                    
+                   <ListBox Name="listBox1" 
                              ItemsSource="{Binding Source={StaticResource ItemsView}}" 
-                             ItemTemplate="{StaticResource KVPItemTemplate}" 
-                             Width="163" Grid.Row="1">
+                             MaxHeight="500"
+                             ItemContainerStyle="{StaticResource ListBoxItemStyle1}"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             BorderThickness="0,0,0,0"
+                            Margin="0,0,0,0"
+                             Background="White"
+                             Width="Auto" Grid.Row="1" MinWidth="183">
 
                         <ListBox.GroupStyle>
                             <GroupStyle>
@@ -531,7 +745,7 @@
             </Grid.ColumnDefinitions>
             <ScrollViewer Grid.Column="0" Grid.Row="0" VerticalScrollBarVisibility="Auto">
 
-                <StackPanel  Orientation="Vertical" Width="175" Margin="0,15,0,0">
+                <StackPanel  Orientation="Vertical" Width="200" Margin="0,15,0,0">
 
 
                     <Expander Name="AgentPaneLabel" Header="Agents" VerticalAlignment="Bottom">
@@ -561,9 +775,9 @@
                     </Expander>
 
 
-                    <Expander Name="AuctionsLabel" Header="{Binding UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Bottom">
+                    <Expander Name="AuctionsLabel" Header="{Binding UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Bottom" IsExpanded="True">
 
-                        <ItemsControl Name="AuctionsList" ItemTemplate="{StaticResource AuctionTemplate}" 
+                        <ItemsControl Name="AuctionsList" ItemTemplate="{StaticResource ItemPaneTemplate}" 
                  ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged}" Margin="0, 5, 5, 0">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -574,15 +788,14 @@
                         </ItemsControl>
                     </Expander>
 
-                    <Expander Name="CommonsLabel"  VerticalAlignment="Bottom">
+                    <Expander Name="CommonsLabel"  VerticalAlignment="Bottom" IsExpanded="True">
                         <Expander.Header>
                             <StackPanel Orientation="Vertical">
-                                <TextBlock Text="Common rights" />
-                                <TextBlock Text="and obligations" />
-                            </StackPanel>
+                                <TextBlock Text="Common rights and obligations" />
+                                </StackPanel>
                         </Expander.Header>
 
-                        <ItemsControl Name="CommonsList" ItemTemplate="{StaticResource CommonRightsTemplate}"
+                        <ItemsControl Name="CommonsList" ItemTemplate="{StaticResource ItemPaneTemplate}"
                  ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged}" Margin="0, 5, 5, 0">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -606,7 +819,7 @@
 
         </ListBox>
 
-        <ListBox Name="TradeChannel" BorderBrush="White" Grid.Row="1" Grid.Column="0" Height="80" ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged}" Margin="18,0,639,0" VerticalAlignment="Bottom" />
+        <ListBox Name="TradeChannel" BorderBrush="White" Grid.Row="1" Grid.Column="0" Height="80" ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged}" Margin="18,0,320,0" VerticalAlignment="Bottom" />
 
         <Slider Name="MainSlider" 
                         HorizontalAlignment="Left" 

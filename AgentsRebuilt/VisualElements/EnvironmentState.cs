@@ -8,7 +8,7 @@ using Microsoft.Win32;
 
 namespace AgentsRebuilt
 {
-    internal class AgentState
+    internal class EnvironmentState
     {
         public Clock Clock;
         public SystemEvent Event = null;
@@ -18,9 +18,9 @@ namespace AgentsRebuilt
         public ObservableCollection<Agent> AllAgents = new ObservableCollection<Agent>();
         public ObservableCollection<Item> AllItems = new ObservableCollection<Item>();
 
-        public AgentState GetFullCopy()
+        public EnvironmentState GetFullCopy()
         {
-            var result = new AgentState();
+            var result = new EnvironmentState();
             result.Clock = Clock.GetFullCopy();
 
             result.Event = Event == null ? null:Event.GetFullCopy();
@@ -65,9 +65,9 @@ namespace AgentsRebuilt
 
 
 
-        //public AgentState ShallowCopy()
+        //public EnvironmentState ShallowCopy()
         //{
-        //    var res = (AgentState) this.MemberwiseClone();
+        //    var res = (EnvironmentState) this.MemberwiseClone();
         //    res.Clock = Clock.ShallowCopy();
         //    res.Agents = new ObservableCollection<Agent>();
         //    Agent[] tAgents= new Agent[Agents.Count];

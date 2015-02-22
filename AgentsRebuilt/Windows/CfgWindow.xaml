@@ -13,9 +13,9 @@
         <Label Content="Visualization file:" HorizontalAlignment="Left" Margin="35,173,0,0" VerticalAlignment="Top" Grid.ColumnSpan="2"/>
         <TextBox x:Name="TextBox3" HorizontalAlignment="Left" Height="26" Margin="83,174,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="206" Grid.Column="1"/>
         <Button x:Name="iconOpenBtn"  Content="Browse" HorizontalAlignment="Left" Height="23" Margin="308,174,0,0" VerticalAlignment="Top" Width="68" Click="iconOpenBtn_Click" Grid.Column="1"/>
-        <Button Name="SaveCfgBtn" Content="Save" HorizontalAlignment="Left" Height="28" Margin="34,247,0,0" VerticalAlignment="Top" Width="95" Click="SaveCfgBtn_Click" Grid.ColumnSpan="2"/>
-        <Button x:Name="SaveExitCfgBtn" Content="Save and Exit" HorizontalAlignment="Left" Height="28" Margin="131,247,0,0" VerticalAlignment="Top" Width="95" Click="SaveExitCfgBtn_Click" Grid.Column="1"/>
-        <Button x:Name="CgfCancelBtn" Content="Cancel" HorizontalAlignment="Left" Height="28" Margin="281,247,0,0" VerticalAlignment="Top" Width="95" Click="CgfCancelBtn_Click" Grid.Column="1"/>
+        <Button Name="SaveCfgBtn" Content="Apply" HorizontalAlignment="Left" Height="28" Margin="281,247,0,0" VerticalAlignment="Top" Width="95" Click="SaveCfgBtn_Click" Grid.Column="1"/>
+        <Button x:Name="SaveExitCfgBtn" Content="Ok" HorizontalAlignment="Left" Height="28" Margin="39,247,0,0" VerticalAlignment="Top" Width="95" Click="SaveExitCfgBtn_Click" Grid.ColumnSpan="2"/>
+        <Button x:Name="CgfCancelBtn" Content="Cancel" HorizontalAlignment="Left" Height="28" Margin="131,247,0,0" VerticalAlignment="Top" Width="95" Click="CgfCancelBtn_Click" Grid.Column="1"/>
         <Label Content="Config file path:" HorizontalAlignment="Left" Margin="35,24,0,0" VerticalAlignment="Top" Grid.ColumnSpan="2"/>
         <TextBox x:Name="ConfigTextBox" HorizontalAlignment="Left" Height="26" Margin="83,24,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="143" Grid.Column="1"/>
         <Button x:Name="ConfigFileLoadButton"  Content="Load" HorizontalAlignment="Left" Height="23" Margin="158,64,0,0" VerticalAlignment="Top" Width="68" Grid.Column="1" Click="ConfigFileLoadButton_Click"/>
